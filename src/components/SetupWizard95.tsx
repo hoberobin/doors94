@@ -79,7 +79,7 @@ export default function SetupWizard95({
           <div style={{ padding: '20px', color: '#000000' }}>
             <div style={{ marginBottom: '16px' }}>
               <h2 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#000000' }}>
-                Welcome to ContextOS 95
+                Welcome to Doors94
               </h2>
               <p style={{ fontSize: '11px', lineHeight: '1.5', marginBottom: '12px', color: '#000000' }}>
                 This wizard will help you set up your personalized agent experience.
@@ -267,7 +267,7 @@ export default function SetupWizard95({
 
   return (
     <Win95Window
-      title="ContextOS 95 Setup Wizard"
+      title="Doors94 Setup Wizard"
       isActive={isActive}
       onClose={onClose}
       onMinimize={onMinimize}

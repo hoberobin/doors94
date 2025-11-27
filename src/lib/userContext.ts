@@ -5,7 +5,7 @@ export type UserContext = {
   tone: 'friendly' | 'blunt' | 'concise' | 'playful';
 };
 
-const STORAGE_KEY = 'contextos_user';
+const STORAGE_KEY = 'doors94_user';
 
 /**
  * Get user context from localStorage (client-side only)

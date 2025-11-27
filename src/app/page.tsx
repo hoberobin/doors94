@@ -7,6 +7,7 @@ import Win95Window from '@/components/Win95Window'
 import AgentChatWindow from '@/components/AgentChatWindow'
 import SetupWizard95 from '@/components/SetupWizard95'
 import ControlPanelWindow from '@/components/ControlPanelWindow'
+import ReadMeWindow from '@/components/ReadMeWindow'
 import { getAgentById } from '@/lib/agents'
 import { getUserContext } from '@/lib/userContext'
 
@@ -59,8 +60,8 @@ export default function Home() {
     }
 
     // Create new window with offset positioning
-    const defaultWidth = appId === 'control_panel' ? 600 : 500
-    const defaultHeight = appId === 'control_panel' ? 500 : 400
+    const defaultWidth = appId === 'control_panel' ? 600 : appId === 'readme' ? 550 : 500
+    const defaultHeight = appId === 'control_panel' ? 500 : appId === 'readme' ? 500 : 400
     
     const newWindow: Window = {
       id: windowId,
@@ -160,6 +161,27 @@ export default function Home() {
         if (window.appId === 'control_panel') {
           return (
             <ControlPanelWindow
+              key={window.id}
+              isActive={activeWindowId === window.id}
+              onClose={() => handleCloseWindow(window.id)}
+              onMinimize={() => handleMinimizeWindow(window.id)}
+              onClick={() => handleWindowClick(window.id)}
+              onMove={(x, y) => handleWindowMove(window.id, x, y)}
+              onResize={(width, height) => handleWindowResize(window.id, width, height)}
+              style={{
+                left: `${window.x}px`,
+                top: `${window.y}px`,
+                width: `${window.width}px`,
+                height: `${window.height}px`,
+              }}
+            />
+          )
+        }
+
+        // Render Read Me window
+        if (window.appId === 'readme') {
+          return (
+            <ReadMeWindow
               key={window.id}
               isActive={activeWindowId === window.id}
               onClose={() => handleCloseWindow(window.id)}

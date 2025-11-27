@@ -29,6 +29,51 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
         paddingLeft: '16px',
       }}
     >
+      {/* Read Me Icon */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '4px',
+          cursor: 'pointer',
+          padding: '4px',
+          userSelect: 'none',
+        }}
+        onDoubleClick={() => onOpenWindow('readme', 'readme', 'Read Me')}
+        onClick={(e) => {
+          e.stopPropagation()
+        }}
+      >
+        <div
+          style={{
+            width: '32px',
+            height: '32px',
+            backgroundColor: 'var(--win95-window-bg)',
+            border: '2px solid',
+            borderColor: 'var(--win95-border-light) var(--win95-border-darker) var(--win95-border-darker) var(--win95-border-light)',
+            boxShadow: '1px 1px 0 0 var(--win95-shadow-dark), -1px -1px 0 0 var(--win95-shadow-light)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '20px',
+          }}
+        >
+          📄
+        </div>
+        <span
+          style={{
+            fontSize: '11px',
+            color: '#000000',
+            textShadow: '1px 1px 0 rgba(255,255,255,0.8)',
+            textAlign: 'center',
+            maxWidth: '64px',
+          }}
+        >
+          Read Me
+        </span>
+      </div>
+
       {/* Control Panel Icon */}
       <div
         style={{
@@ -64,7 +109,8 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
         <span
           style={{
             fontSize: '11px',
-            color: '#ffffff',
+            color: '#000000',
+            textShadow: '1px 1px 0 rgba(255,255,255,0.8)',
             textAlign: 'center',
             maxWidth: '64px',
           }}
