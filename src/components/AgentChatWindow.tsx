@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import { AgentConfig, AgentId } from '@/lib/agents'
-import { getUserContext, serializeUserContext, UserContext, getAgentOverride } from '@/lib/userContext'
+import { getUserContext, serializeUserContext, UserContext, getAgentOverride, saveConversationMemory, ConversationMemory } from '@/lib/userContext'
 
 interface Message {
   role: 'user' | 'assistant' | 'system'
@@ -34,6 +34,40 @@ export default function AgentChatWindow({ agent }: AgentChatWindowProps) {
     scrollToBottom()
   }, [messages])
 
+  const handleSaveConversation = () => {
+    if (messages.length === 0) return
+    
+    const userMessages = messages.filter(m => m.role === 'user')
+    const assistantMessages = messages.filter(m => m.role === 'assistant')
+    
+    // Create a summary from the first user message
+    const firstUserMessage = userMessages[0]?.content || ''
+    const summary = firstUserMessage.length > 150 
+      ? firstUserMessage.substring(0, 150) + '...'
+      : firstUserMessage || `Conversation with ${agent.name}`
+    
+    // Extract key topics from user messages
+    const keyTopics: string[] = []
+    userMessages.forEach(msg => {
+      // Simple keyword extraction
+      const words = msg.content.toLowerCase().match(/\b\w{5,}\b/g) || []
+      const filtered = words.filter(w => !['about', 'which', 'where', 'there', 'their', 'could', 'would', 'should'].includes(w))
+      keyTopics.push(...filtered.slice(0, 2))
+    })
+    
+    const memory: ConversationMemory = {
+      agentId: agent.id,
+      timestamp: Date.now(),
+      summary: summary,
+      keyTopics: [...new Set(keyTopics)].slice(0, 5),
+    }
+    
+    saveConversationMemory(memory)
+    
+    // Show a brief confirmation (could be enhanced with a toast notification)
+    alert('Conversation saved to history!')
+  }
+
   const handleSend = async () => {
     if (!input.trim() || isLoading) return
 
@@ -48,24 +82,42 @@ export default function AgentChatWindow({ agent }: AgentChatWindowProps) {
     setIsLoading(true)
 
     try {
-      // Serialize user context if available
-      const serializedContext = userContext ? serializeUserContext(userContext) : undefined
+      // Serialize user context if available (agent-specific)
+      let serializedContext: string | undefined;
+      try {
+        serializedContext = userContext ? serializeUserContext(userContext, agent.id) : undefined;
+      } catch (contextError) {
+        console.error('Error serializing user context:', contextError);
+        // Continue without context if serialization fails
+        serializedContext = undefined;
+      }
       
       // Get agent override if available
       const agentOverride = getAgentOverride(agent.id)
+
+      const requestBody = {
+        agentId: agent.id as AgentId,
+        messages: updatedMessages,
+        userContext: serializedContext,
+        agentOverride: agentOverride || undefined,
+      };
+
+      console.log('Sending request to /api/chat with:', {
+        agentId: requestBody.agentId,
+        messageCount: requestBody.messages.length,
+        hasContext: !!requestBody.userContext,
+        hasOverride: !!requestBody.agentOverride,
+      });
 
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          agentId: agent.id as AgentId,
-          messages: updatedMessages,
-          userContext: serializedContext,
-          agentOverride: agentOverride || undefined,
-        }),
+        body: JSON.stringify(requestBody),
       })
+
+      console.log('Response received, status:', response.status);
 
       if (!response.ok) {
         const errorData = await response.json()
@@ -241,43 +293,59 @@ export default function AgentChatWindow({ agent }: AgentChatWindowProps) {
       </div>
 
       {/* Input area */}
-      <div
-        style={{
-          display: 'flex',
-          gap: '4px',
-          alignItems: 'flex-end',
-        }}
-      >
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Type your message..."
-          disabled={isLoading}
+      <div>
+        {messages.length > 0 && (
+          <div style={{ marginBottom: '4px', display: 'flex', justifyContent: 'flex-end' }}>
+            <button
+              onClick={handleSaveConversation}
+              className="win95-button"
+              style={{
+                fontSize: '10px',
+                padding: '2px 8px',
+              }}
+            >
+              💾 Save Conversation
+            </button>
+          </div>
+        )}
+        <div
           style={{
-            flex: 1,
-            minHeight: '60px',
-            maxHeight: '120px',
-            padding: '4px',
-            fontSize: '11px',
-            fontFamily: 'inherit',
-            border: '2px inset',
-            borderColor: 'var(--win95-border-dark) var(--win95-border-light) var(--win95-border-light) var(--win95-border-dark)',
-            backgroundColor: '#ffffff',
-            resize: 'vertical',
-          }}
-        />
-        <button
-          onClick={handleSend}
-          disabled={!input.trim() || isLoading}
-          className="win95-button"
-          style={{
-            minWidth: '60px',
-            height: '60px',
+            display: 'flex',
+            gap: '4px',
+            alignItems: 'flex-end',
           }}
         >
-          Send
-        </button>
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Type your message..."
+            disabled={isLoading}
+            style={{
+              flex: 1,
+              minHeight: '60px',
+              maxHeight: '120px',
+              padding: '4px',
+              fontSize: '11px',
+              fontFamily: 'inherit',
+              border: '2px inset',
+              borderColor: 'var(--win95-border-dark) var(--win95-border-light) var(--win95-border-light) var(--win95-border-dark)',
+              backgroundColor: '#ffffff',
+              resize: 'vertical',
+            }}
+          />
+          <button
+            onClick={handleSend}
+            disabled={!input.trim() || isLoading}
+            className="win95-button"
+            style={{
+              minWidth: '60px',
+              height: '60px',
+            }}
+          >
+            Send
+          </button>
+        </div>
       </div>
     </div>
   )
