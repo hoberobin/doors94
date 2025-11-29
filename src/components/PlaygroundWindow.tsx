@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react'
 import Win95Window from './Win95Window'
 import { AgentManifest } from '@/lib/agentManifest'
-import { getAllAgents } from '@/lib/agentStorage'
+import { useAgents } from '@/contexts/AgentContext'
+import { saveConversation } from '@/lib/conversationStorage'
 
 interface Message {
   role: 'user' | 'assistant' | 'system'
@@ -29,7 +30,7 @@ export default function PlaygroundWindow({
   onResize,
   style,
 }: PlaygroundWindowProps) {
-  const [agents, setAgents] = useState<AgentManifest[]>([])
+  const { agents: allAgents } = useAgents()
   const [selectedAgentId, setSelectedAgentId] = useState<string>('')
   const [input, setInput] = useState('')
   const [rawResponse, setRawResponse] = useState<string>('')
@@ -39,25 +40,24 @@ export default function PlaygroundWindow({
   const [rawError, setRawError] = useState<string | null>(null)
   const [agentError, setAgentError] = useState<string | null>(null)
 
-  // Load agents on mount
+  // Map agents to AgentManifest format
+  const agents: AgentManifest[] = allAgents.map(a => ({
+    id: a.id,
+    name: a.name,
+    description: a.description,
+    icon: a.icon,
+    purpose: a.purpose,
+    rules: a.rules,
+    tone: a.tone,
+    outputStyle: a.outputStyle,
+  }))
+
+  // Select first agent by default
   useEffect(() => {
-    const allAgents = getAllAgents()
-    setAgents(allAgents.map(a => ({
-      id: a.id,
-      name: a.name,
-      description: a.description,
-      icon: a.icon,
-      purpose: a.purpose,
-      rules: a.rules,
-      tone: a.tone,
-      outputStyle: a.outputStyle,
-    })))
-    
-    // Select first agent by default
-    if (allAgents.length > 0) {
-      setSelectedAgentId(allAgents[0].id)
+    if (agents.length > 0 && !selectedAgentId) {
+      setSelectedAgentId(agents[0].id)
     }
-  }, [])
+  }, [agents, selectedAgentId])
 
   const selectedAgent = agents.find(a => a.id === selectedAgentId)
 
@@ -126,6 +126,15 @@ export default function PlaygroundWindow({
 
       const agentData = await agentResponse.json()
       setAgentResponse(agentData.content)
+      
+      // Save comparison session
+      if (selectedAgent) {
+        const comparisonMessages: Message[] = [
+          userMessage,
+          { role: 'assistant', content: `Raw GPT: ${rawResponse}\n\nAgent Response: ${agentData.content}` },
+        ]
+        saveConversation(`playground_${selectedAgent.id}`, comparisonMessages)
+      }
     } catch (error) {
       setAgentError(error instanceof Error ? error.message : 'An unexpected error occurred')
     } finally {
@@ -272,7 +281,9 @@ export default function PlaygroundWindow({
               }}
             >
               {rawLoading && (
-                <div style={{ color: '#808080', fontStyle: 'italic' }}>Thinking...</div>
+                <div style={{ color: '#808080', fontStyle: 'italic' }} className="win95-loading">
+                  Thinking<span className="win95-loading-dots"></span>
+                </div>
               )}
               {rawError && (
                 <div style={{ color: '#ff0000' }}>Error: {rawError}</div>
@@ -321,7 +332,9 @@ export default function PlaygroundWindow({
               }}
             >
               {agentLoading && (
-                <div style={{ color: '#808080', fontStyle: 'italic' }}>Thinking...</div>
+                <div style={{ color: '#808080', fontStyle: 'italic' }} className="win95-loading">
+                  Thinking<span className="win95-loading-dots"></span>
+                </div>
               )}
               {agentError && (
                 <div style={{ color: '#ff0000' }}>Error: {agentError}</div>

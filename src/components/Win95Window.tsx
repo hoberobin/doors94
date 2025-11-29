@@ -97,6 +97,9 @@ export default function Win95Window({
     <div
       ref={windowRef}
       className="win95-window"
+      role="dialog"
+      aria-label={title}
+      aria-modal="false"
       style={{
         position: 'absolute',
         zIndex: isActive ? 1000 : 100,
@@ -108,6 +111,14 @@ export default function Win95Window({
       <div
         className="win95-window-titlebar"
         onMouseDown={handleTitleBarMouseDown}
+        role="button"
+        aria-label={`Window title bar for ${title}`}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            onClick()
+          }
+        }}
         style={{
           cursor: 'move',
           userSelect: 'none',
@@ -121,6 +132,7 @@ export default function Win95Window({
               e.stopPropagation()
               onMinimize()
             }}
+            aria-label={`Minimize ${title}`}
             style={{
               padding: '0 4px',
               minWidth: '20px',
@@ -137,6 +149,7 @@ export default function Win95Window({
               e.stopPropagation()
               onClose()
             }}
+            aria-label={`Close ${title}`}
             style={{
               padding: '0 4px',
               minWidth: '20px',
@@ -156,6 +169,9 @@ export default function Win95Window({
       {onResize && (
         <div
           onMouseDown={handleResizeMouseDown}
+          role="button"
+          aria-label={`Resize ${title}`}
+          tabIndex={0}
           style={{
             position: 'absolute',
             bottom: 0,

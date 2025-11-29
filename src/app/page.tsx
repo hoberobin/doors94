@@ -1,16 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Desktop from '@/components/Desktop'
 import Taskbar from '@/components/Taskbar'
 import Win95Window from '@/components/Win95Window'
 import AgentChatWindow from '@/components/AgentChatWindow'
 import ControlPanelWindow from '@/components/ControlPanelWindow'
 import ReadMeWindow from '@/components/ReadMeWindow'
-import AgentLabWindow from '@/components/AgentLabWindow'
+import AgentCreatorWindow from '@/components/AgentCreatorWindow'
 import PlaygroundWindow from '@/components/PlaygroundWindow'
-import { getAllAgents } from '@/lib/agentStorage'
 import { AgentManifestWithSource } from '@/lib/agentManifest'
+import { saveWindowStates, loadWindowStates, WindowState as SavedWindowState } from '@/lib/windowStorage'
+import { useAgents } from '@/contexts/AgentContext'
 
 interface Window {
   id: string
@@ -25,10 +26,51 @@ interface Window {
 }
 
 export default function Home() {
+  const { agents, refreshAgents } = useAgents()
   const [windows, setWindows] = useState<Window[]>([])
   const [activeWindowId, setActiveWindowId] = useState<string | null>(null)
   const [windowCounter, setWindowCounter] = useState(0)
-  // Setup wizard removed - no personal info collection needed for sandbox
+  
+  // Load saved window states on mount
+  useEffect(() => {
+    const saved = loadWindowStates()
+    if (saved.length > 0) {
+      const restoredWindows: Window[] = saved.map((w) => ({
+        id: w.id,
+        title: w.title,
+        appId: w.appId,
+        agentId: w.agentId,
+        minimized: w.minimized,
+        x: w.x,
+        y: w.y,
+        width: w.width,
+        height: w.height,
+      }))
+      setWindows(restoredWindows)
+      // Restore active window if any
+      if (restoredWindows.length > 0 && !restoredWindows[0].minimized) {
+        setActiveWindowId(restoredWindows[0].id)
+      }
+    }
+  }, [])
+
+  // Save window states whenever they change
+  useEffect(() => {
+    if (windows.length > 0) {
+      const statesToSave: SavedWindowState[] = windows.map((w) => ({
+        id: w.id,
+        title: w.title,
+        appId: w.appId,
+        agentId: w.agentId,
+        minimized: w.minimized,
+        x: w.x,
+        y: w.y,
+        width: w.width,
+        height: w.height,
+      }))
+      saveWindowStates(statesToSave)
+    }
+  }, [windows])
 
   const handleOpenWindow = (windowId: string, appId: string, title: string, agentId?: string, source?: 'builtin' | 'user', editAgentId?: string) => {
     // Check if window already exists
@@ -53,8 +95,22 @@ export default function Home() {
     const defaultWidth = appId === 'control_panel' ? 600 : appId === 'readme' ? 550 : appId === 'agent_lab' ? 600 : appId === 'playground' ? 800 : 500
     const defaultHeight = appId === 'control_panel' ? 500 : appId === 'readme' ? 500 : appId === 'agent_lab' ? 500 : appId === 'playground' ? 600 : 400
     
+    // Ensure window fits on screen
+    const maxWidth = typeof window !== 'undefined' ? window.innerWidth - 40 : defaultWidth
+    const maxHeight = typeof window !== 'undefined' ? window.innerHeight - 100 : defaultHeight
+    const constrainedWidth = Math.min(defaultWidth, maxWidth)
+    const constrainedHeight = Math.min(defaultHeight, maxHeight)
+    
     // For Agent Lab edit mode, use editAgentId if provided
     const finalAgentId = appId === 'agent_lab' && editAgentId ? editAgentId : agentId
+    
+    // Calculate position, ensuring it doesn't go off-screen
+    const offsetX = 100 + (windowCounter % 5) * 30
+    const offsetY = 50 + (windowCounter % 5) * 30
+    const maxX = typeof window !== 'undefined' ? window.innerWidth - constrainedWidth : offsetX
+    const maxY = typeof window !== 'undefined' ? window.innerHeight - constrainedHeight - 50 : offsetY
+    const finalX = Math.max(0, Math.min(offsetX, maxX))
+    const finalY = Math.max(0, Math.min(offsetY, maxY))
     
     const newWindow: Window = {
       id: windowId,
@@ -62,10 +118,10 @@ export default function Home() {
       appId,
       agentId: finalAgentId,
       minimized: false,
-      x: 100 + (windowCounter % 5) * 30,
-      y: 50 + (windowCounter % 5) * 30,
-      width: defaultWidth,
-      height: defaultHeight,
+      x: finalX,
+      y: finalY,
+      width: constrainedWidth,
+      height: constrainedHeight,
     }
 
     setWindows((prev) => [...prev, newWindow])
@@ -112,13 +168,40 @@ export default function Home() {
 
   const handleWindowMove = (windowId: string, x: number, y: number) => {
     setWindows((prev) =>
-      prev.map((w) => (w.id === windowId ? { ...w, x, y } : w))
+      prev.map((w) => {
+        if (w.id === windowId) {
+          // Constrain window to viewport
+          const maxX = window.innerWidth - w.width
+          const maxY = window.innerHeight - 50 // Account for taskbar
+          const constrainedX = Math.max(0, Math.min(x, maxX))
+          const constrainedY = Math.max(0, Math.min(y, maxY))
+          return { ...w, x: constrainedX, y: constrainedY }
+        }
+        return w
+      })
     )
   }
 
   const handleWindowResize = (windowId: string, width: number, height: number) => {
     setWindows((prev) =>
-      prev.map((w) => (w.id === windowId ? { ...w, width, height } : w))
+      prev.map((w) => {
+        if (w.id === windowId) {
+          // Minimum window sizes
+          const minWidth = 200
+          const minHeight = 150
+          const constrainedWidth = Math.max(minWidth, width)
+          const constrainedHeight = Math.max(minHeight, height)
+          
+          // Ensure window doesn't go off-screen
+          const maxWidth = window.innerWidth - w.x
+          const maxHeight = window.innerHeight - w.y - 50 // Account for taskbar
+          const finalWidth = Math.min(constrainedWidth, maxWidth)
+          const finalHeight = Math.min(constrainedHeight, maxHeight)
+          
+          return { ...w, width: finalWidth, height: finalHeight }
+        }
+        return w
+      })
     )
   }
 
@@ -134,8 +217,7 @@ export default function Home() {
         let agent: AgentManifestWithSource | null = null
         if (window.agentId) {
           // Try to find agent from all agents
-          const allAgents = getAllAgents()
-          agent = allAgents.find(a => a.id === window.agentId) || null
+          agent = agents.find(a => a.id === window.agentId) || null
         }
 
         // Render Control Panel window
@@ -150,10 +232,8 @@ export default function Home() {
               onMove={(x, y) => handleWindowMove(window.id, x, y)}
               onResize={(width, height) => handleWindowResize(window.id, width, height)}
               onAgentUpdated={() => {
-                // Refresh desktop to show updated agent icons
-                if (typeof location !== 'undefined') {
-                  location.reload()
-                }
+                // Refresh agents list
+                refreshAgents()
               }}
               style={{
                 left: `${window.x}px`,
@@ -190,7 +270,7 @@ export default function Home() {
         if (window.appId === 'agent_lab') {
           const windowId = window.id
           return (
-            <AgentLabWindow
+            <AgentCreatorWindow
               key={windowId}
               isActive={activeWindowId === windowId}
               onClose={() => handleCloseWindow(windowId)}
@@ -200,13 +280,9 @@ export default function Home() {
               onResize={(width, height) => handleWindowResize(windowId, width, height)}
               agentId={window.agentId} // Pass agentId for edit mode
               onAgentCreated={(agentId) => {
-                // Agent created - could trigger desktop refresh here if needed
-                // For now, just close the window
+                // Agent created - refresh agents list and close window
+                refreshAgents()
                 handleCloseWindow(windowId)
-                // Trigger a page refresh to show new agent icon (simple approach for v1)
-                if (typeof location !== 'undefined') {
-                  location.reload()
-                }
               }}
               style={{
                 left: `${window.x}px`,

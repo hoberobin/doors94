@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { AgentManifest, buildSystemPrompt, validateAgentManifest } from '@/lib/agentManifest';
+import { validateEnv } from '@/lib/env';
+
+// Validate environment on module load
+const envValidation = validateEnv();
+if (!envValidation.valid && typeof window === 'undefined') {
+  console.error('Environment validation failed:', envValidation.error);
+}
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,

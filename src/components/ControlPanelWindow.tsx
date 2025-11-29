@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from 'react'
 import Win95Window from './Win95Window'
 import { AgentManifestWithSource, AgentManifest, buildSystemPrompt, validateAgentManifest, generateAgentId } from '@/lib/agentManifest'
-import { getAllAgents, deleteUserAgent, duplicateUserAgent, saveUserAgent, getUserAgent } from '@/lib/agentStorage'
+import { deleteUserAgent, duplicateUserAgent, saveUserAgent, getUserAgent } from '@/lib/agentStorage'
+import { useDebounce } from '@/hooks/useDebounce'
+import { useAgents } from '@/contexts/AgentContext'
 
 interface ControlPanelWindowProps {
   isActive: boolean
@@ -26,7 +28,7 @@ export default function ControlPanelWindow({
   style,
   onAgentUpdated,
 }: ControlPanelWindowProps) {
-  const [agents, setAgents] = useState<AgentManifestWithSource[]>([])
+  const { agents, refreshAgents } = useAgents()
   const [selectedAgent, setSelectedAgent] = useState<AgentManifestWithSource | null>(null)
   const [isEditMode, setIsEditMode] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
@@ -44,30 +46,16 @@ export default function ControlPanelWindow({
   const [editSaveError, setEditSaveError] = useState<string | null>(null)
 
   /**
-   * Loads agents when the window becomes active.
-   * Ensures the agent list is up-to-date when the user switches to this window.
+   * Refreshes selected agent when agents list updates.
    */
   useEffect(() => {
-    if (isActive) {
-      loadAgents()
-    }
-  }, [isActive])
-
-  /**
-   * Loads all agents (built-in and user-created) and updates the state.
-   * If an agent is currently selected, refreshes its data.
-   */
-  const loadAgents = () => {
-    const loadedAgents = getAllAgents()
-    setAgents(loadedAgents)
-    // If selected agent exists, refresh it
     if (selectedAgent) {
-      const updated = loadedAgents.find(a => a.id === selectedAgent.id && a.source === selectedAgent.source)
+      const updated = agents.find(a => a.id === selectedAgent.id && a.source === selectedAgent.source)
       if (updated) {
         setSelectedAgent(updated)
       }
     }
-  }
+  }, [agents, selectedAgent])
 
   /**
    * Handles agent selection from the list.
@@ -142,13 +130,13 @@ export default function ControlPanelWindow({
 
     try {
       saveUserAgent(manifest as AgentManifest)
-      loadAgents()
+      refreshAgents()
       setIsEditMode(false)
       setShowSaveSuccess(true)
       setTimeout(() => setShowSaveSuccess(false), 2000)
       
       // Refresh the selected agent
-      const updated = getAllAgents().find(a => a.id === manifest.id && a.source === 'user')
+      const updated = agents.find(a => a.id === manifest.id && a.source === 'user')
       if (updated) {
         setSelectedAgent(updated)
       }
@@ -165,7 +153,7 @@ export default function ControlPanelWindow({
   const handleDeleteAgent = (agentId: string) => {
     try {
       deleteUserAgent(agentId)
-      loadAgents()
+      refreshAgents()
       if (selectedAgent?.id === agentId) {
         setSelectedAgent(null)
         setIsEditMode(false)
@@ -182,10 +170,9 @@ export default function ControlPanelWindow({
   const handleDuplicateAgent = (agentId: string) => {
     try {
       const duplicated = duplicateUserAgent(agentId)
-      loadAgents()
+      refreshAgents()
       // Select the newly duplicated agent
-      const allAgents = getAllAgents()
-      const newAgent = allAgents.find(a => a.id === duplicated.id)
+      const newAgent = agents.find(a => a.id === duplicated.id)
       if (newAgent) {
         setSelectedAgent(newAgent)
       }
@@ -215,26 +202,33 @@ export default function ControlPanelWindow({
     setEditRules(updated)
   }
 
+  // Debounce validation to reduce computation
+  const debouncedEditName = useDebounce(editName, 300)
+  const debouncedEditPurpose = useDebounce(editPurpose, 300)
+  const debouncedEditDescription = useDebounce(editDescription, 300)
+  const debouncedEditRules = useDebounce(editRules, 300)
+  const debouncedEditOutputStyle = useDebounce(editOutputStyle, 300)
+
   /**
    * Validates the agent manifest in real-time while editing.
-   * Updates validation errors as the user modifies form fields.
+   * Updates validation errors as the user modifies form fields (debounced).
    */
   useEffect(() => {
     if (isEditMode) {
       const manifest: Partial<AgentManifest> = {
         id: selectedAgent?.id,
-        name: editName.trim(),
-        purpose: editPurpose.trim(),
+        name: debouncedEditName.trim(),
+        purpose: debouncedEditPurpose.trim(),
         tone: editTone,
-        description: editDescription.trim(),
+        description: debouncedEditDescription.trim(),
         icon: editIcon.trim(),
-        rules: editRules.filter(r => r.trim().length > 0),
-        outputStyle: editOutputStyle.trim(),
+        rules: debouncedEditRules.filter(r => r.trim().length > 0),
+        outputStyle: debouncedEditOutputStyle.trim(),
       }
       const validation = validateAgentManifest(manifest)
       setEditValidationErrors(validation.errors)
     }
-  }, [isEditMode, editName, editPurpose, editTone, editDescription, editIcon, editRules, editOutputStyle, selectedAgent?.id])
+  }, [isEditMode, debouncedEditName, debouncedEditPurpose, editTone, debouncedEditDescription, editIcon, debouncedEditRules, debouncedEditOutputStyle, selectedAgent?.id])
 
   const compiledPrompt = selectedAgent ? buildSystemPrompt(selectedAgent) : ''
   const editCompiledPrompt = isEditMode ? buildSystemPrompt({

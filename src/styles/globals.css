@@ -189,3 +189,56 @@ body {
     inset -1px -1px 0 1px var(--win95-shadow-light);
 }
 
+/* Win95-style loading animation */
+@keyframes win95-loading {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.win95-loading {
+  display: inline-block;
+  animation: win95-loading 1.5s ease-in-out infinite;
+}
+
+.win95-loading-dots::after {
+  content: '...';
+  animation: win95-loading 1.5s ease-in-out infinite;
+}
+
+/* Disabled button state */
+.win95-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: var(--win95-border-dark) var(--win95-border-light) var(--win95-border-light) var(--win95-border-dark);
+}
+
+.win95-button:disabled:hover {
+  border-color: var(--win95-border-dark) var(--win95-border-light) var(--win95-border-light) var(--win95-border-dark);
+}
+
+.win95-button:disabled:active {
+  border-color: var(--win95-border-dark) var(--win95-border-light) var(--win95-border-light) var(--win95-border-dark);
+  box-shadow: 
+    1px 1px 0 0 var(--win95-shadow-dark),
+    -1px -1px 0 0 var(--win95-shadow-light),
+    1px 1px 0 1px var(--win95-shadow-darker),
+    -1px -1px 0 1px var(--win95-shadow-light);
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+

@@ -4,8 +4,9 @@ import React, { useState, useEffect } from 'react'
 import Win95Window from './Win95Window'
 import { AgentManifest, buildSystemPrompt, validateAgentManifest, generateAgentId } from '@/lib/agentManifest'
 import { saveUserAgent, getUserAgent } from '@/lib/agentStorage'
+import { useDebounce } from '@/hooks/useDebounce'
 
-interface AgentLabWindowProps {
+interface AgentCreatorWindowProps {
   isActive: boolean
   onClose: () => void
   onMinimize: () => void
@@ -19,7 +20,7 @@ interface AgentLabWindowProps {
 
 type WizardStep = 1 | 2 | 3 | 4 | 5
 
-export default function AgentLabWindow({
+export default function AgentCreatorWindow({
   isActive,
   onClose,
   onMinimize,
@@ -29,7 +30,7 @@ export default function AgentLabWindow({
   style,
   agentId,
   onAgentCreated,
-}: AgentLabWindowProps) {
+}: AgentCreatorWindowProps) {
   const [step, setStep] = useState<WizardStep>(1)
   const [isEditMode] = useState(!!agentId)
   
@@ -64,15 +65,31 @@ export default function AgentLabWindow({
     }
   }, [agentId, isEditMode])
 
+  // Debounce validation to reduce computation
+  const debouncedName = useDebounce(name, 300)
+  const debouncedPurpose = useDebounce(purpose, 300)
+  const debouncedDescription = useDebounce(description, 300)
+  const debouncedRules = useDebounce(rules, 300)
+  const debouncedOutputStyle = useDebounce(outputStyle, 300)
+
   /**
    * Validates the agent manifest in real-time as the user fills out the form.
-   * Updates validation errors whenever form fields change.
+   * Updates validation errors whenever form fields change (debounced).
    */
   useEffect(() => {
-    const manifest = buildManifest()
+    const manifest: Partial<AgentManifest> = {
+      id: agentId || generateAgentId(debouncedName || 'untitled_agent'),
+      name: debouncedName.trim(),
+      description: debouncedDescription.trim(),
+      icon: icon.trim() || '🤖',
+      purpose: debouncedPurpose.trim(),
+      rules: debouncedRules.filter(r => r.trim().length > 0),
+      tone,
+      outputStyle: debouncedOutputStyle.trim(),
+    }
     const validation = validateAgentManifest(manifest)
     setValidationErrors(validation.errors)
-  }, [name, purpose, tone, description, rules, outputStyle])
+  }, [debouncedName, debouncedPurpose, tone, debouncedDescription, debouncedRules, debouncedOutputStyle, icon, agentId])
 
   /**
    * Builds a partial AgentManifest from the current form state.

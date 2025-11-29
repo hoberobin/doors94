@@ -1,30 +1,15 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { AgentManifestWithSource } from '@/lib/agentManifest'
-import { getAllAgents } from '@/lib/agentStorage'
+import { useAgents } from '@/contexts/AgentContext'
 
 interface DesktopProps {
   onOpenWindow: (windowId: string, appId: string, title: string, agentId?: string, source?: 'builtin' | 'user') => void
 }
 
 export default function Desktop({ onOpenWindow }: DesktopProps) {
-  const [agents, setAgents] = useState<AgentManifestWithSource[]>([])
-
-  // Load agents on mount and refresh periodically
-  useEffect(() => {
-    const loadAgents = () => {
-      const loadedAgents = getAllAgents()
-      setAgents(loadedAgents)
-    }
-    
-    loadAgents()
-    
-    // Refresh agents every 2 seconds to catch changes from other windows
-    // (simple approach for v1 - could be improved with event system later)
-    const interval = setInterval(loadAgents, 2000)
-    return () => clearInterval(interval)
-  }, [])
+  const { agents } = useAgents()
 
   const handleDoubleClick = (agent: AgentManifestWithSource) => {
     onOpenWindow(`agent_${agent.id}`, agent.id, agent.name, agent.id, agent.source)

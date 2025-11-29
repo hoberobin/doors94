@@ -2,11 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import { AgentManifestWithSource } from '@/lib/agentManifest'
-
-interface Message {
-  role: 'user' | 'assistant' | 'system'
-  content: string
-}
+import { saveConversation, Message } from '@/lib/conversationStorage'
 
 interface AgentChatWindowProps {
   agent: AgentManifestWithSource
@@ -56,12 +52,6 @@ export default function AgentChatWindow({ agent }: AgentChatWindowProps) {
         mode: 'agent' as const,
       };
 
-      console.log('Sending request to /api/chat with:', {
-        agentId: requestBody.agentManifest.id,
-        agentName: requestBody.agentManifest.name,
-        messageCount: requestBody.messages.length,
-      });
-
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -69,8 +59,6 @@ export default function AgentChatWindow({ agent }: AgentChatWindowProps) {
         },
         body: JSON.stringify(requestBody),
       })
-
-      console.log('Response received, status:', response.status);
 
       if (!response.ok) {
         const errorData = await response.json()
@@ -83,13 +71,19 @@ export default function AgentChatWindow({ agent }: AgentChatWindowProps) {
         content: data.content,
       }
 
-      setMessages([...updatedMessages, assistantMessage])
+      const finalMessages = [...updatedMessages, assistantMessage]
+      setMessages(finalMessages)
+      // Save conversation
+      saveConversation(agent.id, finalMessages)
     } catch (error) {
       const errorMessage: Message = {
         role: 'assistant',
         content: `Error: ${error instanceof Error ? error.message : 'An unexpected error occurred'}`,
       }
-      setMessages([...updatedMessages, errorMessage])
+      const finalMessages = [...updatedMessages, errorMessage]
+      setMessages(finalMessages)
+      // Save conversation even on error
+      saveConversation(agent.id, finalMessages)
     } finally {
       setIsLoading(false)
     }
@@ -207,7 +201,9 @@ export default function AgentChatWindow({ agent }: AgentChatWindowProps) {
               >
                 {agent.name}
               </div>
-              <div style={{ color: '#000000' }}>Thinking...</div>
+              <div style={{ color: '#000000' }} className="win95-loading">
+                Thinking<span className="win95-loading-dots"></span>
+              </div>
             </div>
           </div>
         )}
@@ -229,6 +225,8 @@ export default function AgentChatWindow({ agent }: AgentChatWindowProps) {
             onKeyPress={handleKeyPress}
             placeholder="Type your message..."
             disabled={isLoading}
+            aria-label="Message input"
+            aria-describedby="chat-input-help"
             style={{
               flex: 1,
               minHeight: '60px',
@@ -242,10 +240,12 @@ export default function AgentChatWindow({ agent }: AgentChatWindowProps) {
               resize: 'vertical',
             }}
           />
+          <span id="chat-input-help" className="sr-only">Press Enter to send, Shift+Enter for new line</span>
           <button
             onClick={handleSend}
             disabled={!input.trim() || isLoading}
             className="win95-button"
+            aria-label="Send message"
             style={{
               minWidth: '60px',
               height: '60px',

@@ -136,7 +136,7 @@ doors94/
 │   │   └── page.tsx                  # Main desktop page
 │   ├── components/
 │   │   ├── AgentChatWindow.tsx       # Chat interface for agents
-│   │   ├── AgentLabWindow.tsx        # Agent creation wizard
+│   │   ├── AgentCreatorWindow.tsx        # Agent creation wizard
 │   │   ├── ControlPanelWindow.tsx   # Agent management
 │   │   ├── Desktop.tsx               # Desktop with icons
 │   │   ├── PlaygroundWindow.tsx      # Side-by-side comparison
@@ -208,4 +208,6 @@ If you encounter any issues or have questions, please open an issue on GitHub.
 ---
 
 **Have fun experimenting with agent design!** 🚀
+
+
 
