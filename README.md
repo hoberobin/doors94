@@ -6,7 +6,7 @@ A Windows 95-style sandbox for learning AI agent design through hands-on experim
 
 ## Overview
 
-doors94 is an educational playground disguised as a fake operating system. Learn how to design AI agents by creating, tweaking, testing, and comparing small, single-purpose agents. Experiment with prompts, see how they shape agent behavior, and understand the fundamentals of AI agent design through hands-on play.
+doors94 is an educational playground disguised as a fake operating system. Learn how to design AI agents by creating, tweaking, testing, and comparing small, single-purpose agents. Experiment with prompts, see how they shape agent behavior, and understand the fundamentals of AI agent design through hands-on play — all inside a familiar retro desktop.
 
 ## Features
 
@@ -203,7 +203,7 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## Support
 
-If you encounter any issues or have questions, please open an issue on GitHub.
+If you encounter any issues or have questions, please open an issue or start a discussion on GitHub — feedback and ideas are very welcome.
 
 ---
 

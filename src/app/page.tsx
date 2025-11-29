@@ -30,7 +30,7 @@ export default function LandingPage() {
           <div className="win95-window-body">
             <h1
               style={{
-                fontSize: '18px',
+                fontSize: '20px',
                 marginBottom: '8px',
               }}
             >
@@ -48,7 +48,7 @@ export default function LandingPage() {
                 marginBottom: '16px',
               }}
             >
-              Create, test, and compare custom AI agents in a nostalgic retro computing environment.
+              Create, test, and compare custom AI agents in a nostalgic retro computing environment. No install, no account—just open the desktop and start playing.
             </p>
 
             <nav
@@ -83,8 +83,8 @@ export default function LandingPage() {
                 flexWrap: 'wrap',
               }}
             >
-              <span>Click &quot;Launch doors94&quot; to boot into the desktop.</span>
-              <span style={{ opacity: 0.8 }}>Status: Ready</span>
+              <span>Click &quot;Launch doors94&quot; to boot into the desktop and meet your first tutorial agent.</span>
+              <span style={{ opacity: 0.8 }}>Status: Ready to play</span>
             </div>
           </div>
         </section>

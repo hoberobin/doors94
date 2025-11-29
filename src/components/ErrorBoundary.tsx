@@ -51,23 +51,23 @@ export class ErrorBoundary extends Component<Props, State> {
         >
           <div
             style={{
-              fontSize: '12px',
+              fontSize: '14px',
               fontWeight: 'bold',
               marginBottom: '12px',
               color: '#000000',
             }}
           >
-            Error
+            Something went wrong
           </div>
           <div
             style={{
-              fontSize: '11px',
+              fontSize: '12px',
               marginBottom: '16px',
               color: '#000000',
               lineHeight: '1.4',
             }}
           >
-            {this.state.error?.message || 'An unexpected error occurred'}
+            {this.state.error?.message || 'An unexpected error occurred while running doors94. You can try reloading the desktop to continue.'}
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
             <button

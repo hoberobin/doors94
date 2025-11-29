@@ -137,7 +137,7 @@ export default function Win95Window({
               padding: '0 4px',
               minWidth: '20px',
               minHeight: '18px',
-              fontSize: '11px',
+              fontSize: '12px',
             }}
             title="Minimize"
           >
@@ -154,7 +154,7 @@ export default function Win95Window({
               padding: '0 4px',
               minWidth: '20px',
               minHeight: '18px',
-              fontSize: '11px',
+              fontSize: '12px',
             }}
             title="Close"
           >
