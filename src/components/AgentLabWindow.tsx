@@ -45,7 +45,10 @@ export default function AgentLabWindow({
   const [validationErrors, setValidationErrors] = useState<string[]>([])
   const [saveError, setSaveError] = useState<string | null>(null)
 
-  // Load agent if in edit mode
+  /**
+   * Loads existing agent data when in edit mode.
+   * Populates form fields with the agent's current values.
+   */
   useEffect(() => {
     if (agentId && isEditMode) {
       const existing = getUserAgent(agentId)
@@ -61,13 +64,20 @@ export default function AgentLabWindow({
     }
   }, [agentId, isEditMode])
 
-  // Validate manifest on step changes
+  /**
+   * Validates the agent manifest in real-time as the user fills out the form.
+   * Updates validation errors whenever form fields change.
+   */
   useEffect(() => {
     const manifest = buildManifest()
     const validation = validateAgentManifest(manifest)
     setValidationErrors(validation.errors)
   }, [name, purpose, tone, description, rules, outputStyle])
 
+  /**
+   * Builds a partial AgentManifest from the current form state.
+   * Used for validation and saving.
+   */
   const buildManifest = (): Partial<AgentManifest> => {
     return {
       id: agentId || generateAgentId(name || 'untitled_agent'),
@@ -150,6 +160,10 @@ export default function AgentLabWindow({
     }
   }
 
+  /**
+   * Determines if the user can proceed to the next step.
+   * Each step has different validation requirements.
+   */
   const canProceed = () => {
     switch (step) {
       case 1:
@@ -167,6 +181,10 @@ export default function AgentLabWindow({
     }
   }
 
+  /**
+   * Renders the appropriate step content based on the current wizard step.
+   * Each step collects different parts of the agent manifest.
+   */
   const renderStep = () => {
     const manifest = buildManifest()
     const compiledPrompt = validationErrors.length === 0 && manifest.name && manifest.purpose

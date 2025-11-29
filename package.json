@@ -1,13 +1,23 @@
 {
   "name": "doors94",
   "version": "0.1.0",
-  "private": true,
+  "description": "A Windows 95-style sandbox for learning AI agent design through hands-on experimentation",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
+  "keywords": [
+    "ai",
+    "agents",
+    "openai",
+    "prompt-engineering",
+    "windows95",
+    "retro",
+    "sandbox",
+    "learning"
+  ],
   "dependencies": {
     "next": "^14.0.0",
     "openai": "^6.9.1",

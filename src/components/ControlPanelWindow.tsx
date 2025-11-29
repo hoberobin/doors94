@@ -43,13 +43,20 @@ export default function ControlPanelWindow({
   const [editValidationErrors, setEditValidationErrors] = useState<string[]>([])
   const [editSaveError, setEditSaveError] = useState<string | null>(null)
 
-  // Load agents on mount and refresh when window becomes active
+  /**
+   * Loads agents when the window becomes active.
+   * Ensures the agent list is up-to-date when the user switches to this window.
+   */
   useEffect(() => {
     if (isActive) {
       loadAgents()
     }
   }, [isActive])
 
+  /**
+   * Loads all agents (built-in and user-created) and updates the state.
+   * If an agent is currently selected, refreshes its data.
+   */
   const loadAgents = () => {
     const loadedAgents = getAllAgents()
     setAgents(loadedAgents)
@@ -62,6 +69,10 @@ export default function ControlPanelWindow({
     }
   }
 
+  /**
+   * Handles agent selection from the list.
+   * If in edit mode, prompts the user before switching agents.
+   */
   const handleSelectAgent = (agent: AgentManifestWithSource) => {
     if (isEditMode) {
       // Confirm leaving edit mode
@@ -74,6 +85,11 @@ export default function ControlPanelWindow({
     setIsEditMode(false)
   }
 
+  /**
+   * Enters edit mode for the selected user agent.
+   * Loads the agent's data into the edit form fields.
+   * Built-in agents cannot be edited.
+   */
   const handleStartEdit = () => {
     if (!selectedAgent || selectedAgent.source === 'builtin') return
     
@@ -92,12 +108,19 @@ export default function ControlPanelWindow({
     }
   }
 
+  /**
+   * Cancels edit mode and clears edit form state.
+   */
   const cancelEdit = () => {
     setIsEditMode(false)
     setEditValidationErrors([])
     setEditSaveError(null)
   }
 
+  /**
+   * Saves the edited agent manifest.
+   * Validates the manifest before saving and shows success/error feedback.
+   */
   const handleSaveEdit = () => {
     const manifest: Partial<AgentManifest> = {
       id: selectedAgent?.id || generateAgentId(editName || 'untitled_agent'),
@@ -192,7 +215,10 @@ export default function ControlPanelWindow({
     setEditRules(updated)
   }
 
-  // Validate on changes
+  /**
+   * Validates the agent manifest in real-time while editing.
+   * Updates validation errors as the user modifies form fields.
+   */
   useEffect(() => {
     if (isEditMode) {
       const manifest: Partial<AgentManifest> = {

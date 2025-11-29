@@ -9,7 +9,7 @@ import ControlPanelWindow from '@/components/ControlPanelWindow'
 import ReadMeWindow from '@/components/ReadMeWindow'
 import AgentLabWindow from '@/components/AgentLabWindow'
 import PlaygroundWindow from '@/components/PlaygroundWindow'
-import { getAllAgents, getAgentByIdAndSource } from '@/lib/agentStorage'
+import { getAllAgents } from '@/lib/agentStorage'
 import { AgentManifestWithSource } from '@/lib/agentManifest'
 
 interface Window {
