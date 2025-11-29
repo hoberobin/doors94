@@ -62,8 +62,15 @@ export default function ReadMeWindow({
         </h2>
 
         <p style={{ marginBottom: '12px', color: '#000000' }}>
-          Your desktop starts with <strong>Tutorial</strong> - a built-in agent that teaches you how to use doors94.
-          Double-click it to ask questions about features, workflows, or how things work. It's your personal guide to the sandbox!
+          When you first visit doors94, you’ll see a landing page. Click <strong>“Launch doors94”</strong> to boot into
+          the Windows 95-style desktop at <code>/app</code>.
+        </p>
+
+        <p style={{ marginBottom: '12px', color: '#000000' }}>
+          Your desktop includes <strong>Tutorial</strong> — a built-in agent that teaches you how to use doors94.
+          You can open it by clicking the <strong>Start</strong> button on the taskbar or by double-clicking the
+          <strong>“Tutorial”</strong> icon on the desktop. Ask it questions about features, workflows, or how things
+          work; it’s your personal guide to the sandbox!
         </p>
 
         <p style={{ marginBottom: '16px', color: '#000000' }}>

@@ -27,7 +27,7 @@ doors94 is an educational playground disguised as a fake operating system. Learn
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/doors94.git
+git clone https://github.com/hoberobin/doors94.git
 cd doors94
 ```
 
@@ -67,20 +67,22 @@ npm start
 
 ### Getting Started
 
-1. **Start with Tutorial**: Double-click the "Tutorial" icon on the desktop to learn about doors94 features and workflows.
+1. **Open the app**: Visit the root URL to see the landing page, then click **“Launch doors94”** to boot into the Windows 95-style desktop at `/app`.
 
-2. **Create Your First Agent**: Double-click "Agent Creator" to open the creation wizard:
+2. **Start with Tutorial**: Click the **Start** button on the taskbar or double-click the **“Tutorial”** icon on the desktop to learn about doors94 features and workflows.
+
+3. **Create Your First Agent**: Double-click **“Agent Creator”** to open the creation wizard:
    - **Step 1**: Enter basic information (name, description, icon)
    - **Step 2**: Define the agent's purpose
    - **Step 3**: Add behavior rules (optional)
    - **Step 4**: Choose tone and output style
    - **Step 5**: Preview the compiled system prompt and save
 
-3. **Test Your Agent**: Double-click your agent icon on the desktop to start chatting.
+4. **Test Your Agent**: Double-click your agent icon on the desktop to start chatting.
 
-4. **Compare in Playground**: Open the Playground to compare your agent's responses with raw GPT side-by-side.
+5. **Compare in Playground**: Open the **Playground** to compare your agent's responses with raw GPT side-by-side. (The built-in **Tutorial** helper agent is intentionally hidden from this dropdown so you can focus on benchmarking your own agents.)
 
-5. **Manage Agents**: Use the Control Panel to edit, duplicate, or delete your agents.
+6. **Manage Agents**: Use the **Control Panel** to edit, duplicate, or delete your agents.
 
 ### Creating Agents
 
@@ -132,8 +134,9 @@ doors94/
 │   │   ├── api/
 │   │   │   └── chat/
 │   │   │       └── route.ts          # OpenAI API integration
-│   │   ├── layout.tsx                 # Root layout
-│   │   └── page.tsx                  # Main desktop page
+│   │   ├── layout.tsx                 # Root layout and metadata (including favicon)
+│   │   ├── page.tsx                   # Landing page (marketing + GitHub / Launch CTAs)
+│   │   └── app/page.tsx               # Main desktop \"OS\" page at /app
 │   ├── components/
 │   │   ├── AgentChatWindow.tsx       # Chat interface for agents
 │   │   ├── AgentCreatorWindow.tsx        # Agent creation wizard
@@ -193,7 +196,7 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 
 ## License
 
-This project is open source and available under the [MIT License](LICENSE).
+This project is open source and available under the [MIT License](LICENSE). You are welcome to read the code, fork it, and adapt doors94 for your own tools, teaching demos, or experiments.
 
 ## Acknowledgments
 
