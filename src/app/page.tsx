@@ -30,7 +30,7 @@ export default function LandingPage() {
           <div className="win95-window-body">
             <h1
               style={{
-                fontSize: '20px',
+                fontSize: '22px',
                 marginBottom: '8px',
               }}
             >
@@ -48,7 +48,7 @@ export default function LandingPage() {
                 marginBottom: '16px',
               }}
             >
-              Create, test, and compare custom AI agents in a nostalgic retro computing environment. No install, no account—just open the desktop and start playing.
+              Create, test, and compare custom AI agents in a nostalgic retro computing environment. No install, no account—just open the desktop, start playing, and see how it all works under the hood.
             </p>
 
             <nav
@@ -68,7 +68,7 @@ export default function LandingPage() {
                 rel="noopener noreferrer"
                 className="win95-button"
               >
-                View on GitHub
+                View the open-source code
               </a>
             </nav>
 
@@ -83,8 +83,11 @@ export default function LandingPage() {
                 flexWrap: 'wrap',
               }}
             >
-              <span>Click &quot;Launch doors94&quot; to boot into the desktop and meet your first tutorial agent.</span>
-              <span style={{ opacity: 0.8 }}>Status: Ready to play</span>
+              <span>
+                Click &quot;Launch doors94&quot; to boot into the desktop.
+                Or explore the repo to fork, tweak, and extend the system yourself.
+              </span>
+         
             </div>
           </div>
         </section>
@@ -131,7 +134,7 @@ export default function LandingPage() {
                 </p>
 
                 <h2
-                  style={{
+            style={{
                     fontSize: '13px',
                     marginBottom: '6px',
                     marginTop: '12px',
@@ -164,15 +167,29 @@ export default function LandingPage() {
                   <li>Built-in tutorial and real-time validation while you edit.</li>
                 </ul>
 
-                <p style={{ marginTop: '8px' }}>
+                <p style={{ marginTop: '8px', marginBottom: '8px' }}>
                   Under the hood, agents are defined as manifests that compile into system prompts, so you
                   can see exactly how structure shapes behavior.
+                </p>
+                <h2
+                  style={{
+                    fontSize: '13px',
+                    marginBottom: '6px',
+                    marginTop: '8px',
+                  }}
+                >
+                  Open-source by design
+                </h2>
+                <p>
+                  doors94 is an open-source MIT-licensed project. You can read every line of code, learn from
+                  how it’s built, and remix it into your own tooling or teaching demos. Contributions, issues,
+                  and ideas are welcome in the GitHub repo.
                 </p>
               </div>
             </div>
           </div>
         </section>
-      </div>
+    </div>
     </main>
   )
 }

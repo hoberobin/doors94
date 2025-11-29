@@ -151,7 +151,7 @@ export default function AgentChatWindow({ agent }: AgentChatWindowProps) {
                     ? 'var(--win95-border-dark) var(--win95-border-light) var(--win95-border-light) var(--win95-border-dark)'
                     : 'var(--win95-border-light) var(--win95-border-dark) var(--win95-border-dark) var(--win95-border-light)',
                   borderRadius: '2px',
-                  fontSize: '12px',
+                  fontSize: '13px',
                   lineHeight: '1.4',
                   whiteSpace: 'pre-wrap',
                   wordWrap: 'break-word',
@@ -161,7 +161,7 @@ export default function AgentChatWindow({ agent }: AgentChatWindowProps) {
                   style={{
                     fontWeight: 'bold',
                     marginBottom: '4px',
-                    fontSize: '11px',
+                    fontSize: '12px',
                     color: '#000080',
                   }}
                 >

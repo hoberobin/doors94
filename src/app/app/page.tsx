@@ -230,6 +230,21 @@ export default function AppDesktop() {
     )
   }
 
+  const handleStartClick = () => {
+    const tutorialAgent = agents.find(a => a.id === 'tutorial')
+    if (!tutorialAgent) {
+      return
+    }
+
+    handleOpenWindow(
+      `agent_${tutorialAgent.id}`,
+      tutorialAgent.id,
+      tutorialAgent.name,
+      tutorialAgent.id,
+      tutorialAgent.source
+    )
+  }
+
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
       <Desktop onOpenWindow={handleOpenWindow} />
@@ -374,6 +389,7 @@ export default function AppDesktop() {
         windows={windows}
         activeWindowId={activeWindowId}
         onSelectWindow={handleSelectWindow}
+        onStartClick={handleStartClick}
       />
     </div>
   )

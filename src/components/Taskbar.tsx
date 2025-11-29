@@ -13,12 +13,14 @@ interface TaskbarProps {
   windows: Window[]
   activeWindowId: string | null
   onSelectWindow: (windowId: string) => void
+  onStartClick: () => void
 }
 
 export default function Taskbar({
   windows,
   activeWindowId,
   onSelectWindow,
+  onStartClick,
 }: TaskbarProps) {
   const visibleWindows = windows.filter((w) => !w.minimized)
 
@@ -37,7 +39,13 @@ export default function Taskbar({
         zIndex: 10000,
       }}
     >
-      <button className="win95-taskbar-start">Start</button>
+      <button
+        className="win95-taskbar-start"
+        onClick={onStartClick}
+        aria-label="Open Tutorial"
+      >
+        Start
+      </button>
       <div
         style={{
           display: 'flex',

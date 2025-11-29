@@ -60,7 +60,7 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
       </div>
       <span
         style={{
-          fontSize: '12px',
+          fontSize: '13px',
           color: textColor,
           textShadow: 'none',
           textAlign: 'center',
