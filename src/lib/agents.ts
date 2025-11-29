@@ -1,5 +1,5 @@
 /**
- * @deprecated This file is deprecated and no longer used in door94.
+ * @deprecated This file is deprecated and no longer used in doors94.
  * It contains the old personal agent definitions (PM95, Fixit, Tinkerer, Builder).
  * 
  * The new system uses:

@@ -24,7 +24,7 @@ export default function ReadMeWindow({
 }: ReadMeWindowProps) {
   return (
     <Win95Window
-      title="Read Me - door94"
+      title="Read Me - doors94"
       isActive={isActive}
       onClose={onClose}
       onMinimize={onMinimize}
@@ -44,11 +44,11 @@ export default function ReadMeWindow({
         }}
       >
         <h1 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '12px', color: '#000000' }}>
-          Welcome to door94
+          Welcome to doors94
         </h1>
 
         <p style={{ marginBottom: '16px', color: '#000000' }}>
-          door94 is a retro Windows-95–style sandbox where you learn how to design AI agents by creating,
+          doors94 is a retro Windows-95–style sandbox where you learn how to design AI agents by creating,
           tweaking, testing, and comparing small, single-purpose agents.
         </p>
 
@@ -62,7 +62,7 @@ export default function ReadMeWindow({
         </h2>
 
         <p style={{ marginBottom: '12px', color: '#000000' }}>
-          Your desktop starts with <strong>Tutorial</strong> - a built-in agent that teaches you how to use door94.
+          Your desktop starts with <strong>Tutorial</strong> - a built-in agent that teaches you how to use doors94.
           Double-click it to ask questions about features, workflows, or how things work. It's your personal guide to the sandbox!
         </p>
 
@@ -123,7 +123,7 @@ export default function ReadMeWindow({
 
         <p style={{ marginBottom: '16px', color: '#000000' }}>
           Enter the same message and compare outputs to see how prompts shape behavior. This is the core
-          learning mechanism of door94!
+          learning mechanism of doors94!
         </p>
 
         <h2 style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '20px', marginBottom: '8px', color: '#000000' }}>
@@ -131,7 +131,7 @@ export default function ReadMeWindow({
         </h2>
 
         <ol style={{ marginLeft: '20px', marginBottom: '16px', color: '#000000' }}>
-          <li>Chat with <strong>Tutorial</strong> to learn about door94</li>
+          <li>Chat with <strong>Tutorial</strong> to learn about doors94</li>
           <li>Open <strong>Agent Creator</strong> to create your first agent</li>
           <li>Test your agent in a chat window</li>
           <li>Use <strong>Playground</strong> to compare it against raw GPT</li>
@@ -169,7 +169,7 @@ export default function ReadMeWindow({
         </h2>
 
         <p style={{ marginBottom: '12px', color: '#000000' }}>
-          By using door94, you'll understand:
+          By using doors94, you'll understand:
         </p>
         <ul style={{ marginLeft: '20px', marginBottom: '16px', color: '#000000' }}>
           <li>How system prompts shape AI behavior</li>

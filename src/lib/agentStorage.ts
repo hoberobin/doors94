@@ -1,7 +1,7 @@
 import { AgentManifest, AgentManifestWithSource, AgentSource, validateAgentManifest } from './agentManifest';
 import { BUILTIN_AGENTS } from './builtinAgents';
 
-const STORAGE_KEY = 'DOOR94_USER_AGENTS';
+const STORAGE_KEY = 'DOORS94_USER_AGENTS';
 const MAX_USER_AGENTS = 50;
 
 /**
