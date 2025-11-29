@@ -1,15 +1,33 @@
 'use client'
 
-import React from 'react'
-import { AGENTS, AgentConfig } from '@/lib/agents'
+import React, { useState, useEffect } from 'react'
+import { AgentManifestWithSource } from '@/lib/agentManifest'
+import { getAllAgents } from '@/lib/agentStorage'
 
 interface DesktopProps {
-  onOpenWindow: (windowId: string, appId: string, title: string, agentId?: string) => void
+  onOpenWindow: (windowId: string, appId: string, title: string, agentId?: string, source?: 'builtin' | 'user') => void
 }
 
 export default function Desktop({ onOpenWindow }: DesktopProps) {
-  const handleDoubleClick = (agent: AgentConfig) => {
-    onOpenWindow(agent.id, agent.id, agent.defaultWindowTitle, agent.id)
+  const [agents, setAgents] = useState<AgentManifestWithSource[]>([])
+
+  // Load agents on mount and refresh periodically
+  useEffect(() => {
+    const loadAgents = () => {
+      const loadedAgents = getAllAgents()
+      setAgents(loadedAgents)
+    }
+    
+    loadAgents()
+    
+    // Refresh agents every 2 seconds to catch changes from other windows
+    // (simple approach for v1 - could be improved with event system later)
+    const interval = setInterval(loadAgents, 2000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const handleDoubleClick = (agent: AgentManifestWithSource) => {
+    onOpenWindow(`agent_${agent.id}`, agent.id, agent.name, agent.id, agent.source)
   }
 
   // Icon component to reduce duplication
@@ -59,7 +77,7 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
         style={{
           fontSize: '11px',
           color: textColor,
-          textShadow: textColor === '#ffffff' ? 'none' : '1px 1px 0 rgba(255,255,255,0.8)',
+          textShadow: 'none',
           textAlign: 'center',
           maxWidth: '64px',
         }}
@@ -82,18 +100,17 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
           gap: '24px',
         }}
       >
-        {AGENTS.map((agent) => (
+        {agents.map((agent) => (
           <Icon
-            key={agent.id}
+            key={`${agent.source}_${agent.id}`}
             icon={agent.icon}
             label={agent.name}
             onDoubleClick={() => handleDoubleClick(agent)}
-            textColor="#ffffff"
           />
         ))}
       </div>
 
-      {/* Bottom Right: Read Me and Control Panel */}
+      {/* Bottom Right: Read Me, Agent Lab, and Control Panel */}
       <div
         style={{
           position: 'fixed',
@@ -108,16 +125,23 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
           icon="📄"
           label="Read Me"
           onDoubleClick={() => onOpenWindow('readme', 'readme', 'Read Me')}
-          textColor="#000000"
+        />
+        <Icon
+          icon="🤖"
+          label="Agent Creator"
+          onDoubleClick={() => onOpenWindow('agent_lab', 'agent_lab', 'Agent Creator')}
+        />
+        <Icon
+          icon="🛝"
+          label="Playground"
+          onDoubleClick={() => onOpenWindow('playground', 'playground', 'Playground')}
         />
         <Icon
           icon="⚙️"
           label="Control Panel"
           onDoubleClick={() => onOpenWindow('control_panel', 'control_panel', 'Control Panel')}
-          textColor="#000000"
         />
       </div>
     </>
   )
 }
-

@@ -1,3 +1,18 @@
+/**
+ * @deprecated This file is deprecated and no longer used in door94.
+ * It contains the old personal agent definitions (PM95, Fixit, Tinkerer, Builder).
+ * 
+ * The new system uses:
+ * - agentManifest.ts for the AgentManifest type
+ * - builtinAgents.ts for built-in example agents
+ * - agentStorage.ts for user-created agents
+ * 
+ * This file is kept for reference only and may be removed in the future.
+ */
+
+import { AgentManifest } from './agentManifest';
+import { BUILTIN_AGENTS } from './builtinAgents';
+
 export type AgentId = 'pm95' | 'fixit' | 'tinkerer' | 'builder';
 
 export type AgentConfig = {
@@ -8,6 +23,31 @@ export type AgentConfig = {
   baseSystemPrompt: string;
   defaultWindowTitle: string;
 };
+
+/**
+ * Converts an old AgentConfig to the new AgentManifest format.
+ * This is used during migration to convert existing hard-coded agents.
+ */
+export function convertAgentConfigToManifest(config: AgentConfig): AgentManifest {
+  // Try to find the corresponding built-in agent first
+  const builtin = BUILTIN_AGENTS.find(a => a.id === config.id);
+  if (builtin) {
+    return builtin;
+  }
+
+  // If not found, create a basic manifest from the config
+  // This is a fallback for any custom agents that might exist
+  return {
+    id: config.id,
+    name: config.name,
+    description: config.description,
+    icon: config.icon,
+    purpose: config.description, // Use description as purpose fallback
+    rules: [], // Cannot extract rules from old format
+    tone: 'friendly', // Default tone
+    outputStyle: 'Clear and helpful responses.',
+  };
+}
 
 export const AGENTS: AgentConfig[] = [
   {

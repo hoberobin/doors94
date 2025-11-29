@@ -24,7 +24,7 @@ export default function ReadMeWindow({
 }: ReadMeWindowProps) {
   return (
     <Win95Window
-      title="Read Me - Doors94"
+      title="Read Me - door94"
       isActive={isActive}
       onClose={onClose}
       onMinimize={onMinimize}
@@ -44,12 +44,17 @@ export default function ReadMeWindow({
         }}
       >
         <h1 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '12px', color: '#000000' }}>
-          Welcome to Doors94
+          Welcome to door94
         </h1>
 
         <p style={{ marginBottom: '16px', color: '#000000' }}>
-          Doors94 is a Windows 95-style interface for managing AI agents. Each agent is specialized
-          for different tasks, and they all use your personal context to provide more relevant assistance.
+          door94 is a retro Windows-95–style sandbox where you learn how to design AI agents by creating,
+          tweaking, testing, and comparing small, single-purpose agents.
+        </p>
+
+        <p style={{ marginBottom: '16px', color: '#000000' }}>
+          This is a learning playground disguised as a fake OS. Experiment with prompts, see how they shape
+          agent behavior, and understand the fundamentals of AI agent design through hands-on play.
         </p>
 
         <h2 style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '20px', marginBottom: '8px', color: '#000000' }}>
@@ -57,60 +62,93 @@ export default function ReadMeWindow({
         </h2>
 
         <p style={{ marginBottom: '12px', color: '#000000' }}>
-          When you first launch Doors94, you'll be guided through a setup wizard that collects:
+          Your desktop starts with <strong>Tutorial</strong> - a built-in agent that teaches you how to use door94.
+          Double-click it to ask questions about features, workflows, or how things work. It's your personal guide to the sandbox!
         </p>
-        <ul style={{ marginLeft: '20px', marginBottom: '16px', color: '#000000' }}>
-          <li>Your name and role</li>
-          <li>Your current projects and goals</li>
-          <li>Your preferred communication tone</li>
-        </ul>
 
         <p style={{ marginBottom: '16px', color: '#000000' }}>
-          This information helps all your agents provide personalized, context-aware responses.
+          After exploring Tutorial, you'll be ready to create your own agents in Agent Creator.
         </p>
 
         <h2 style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '20px', marginBottom: '8px', color: '#000000' }}>
-          Your Agents
+          Creating Your Own Agent
         </h2>
 
         <p style={{ marginBottom: '12px', color: '#000000' }}>
-          Double-click any agent icon on the desktop to open a chat window with that agent:
+          Double-click <strong>Agent Creator</strong> to open the agent creation wizard:
         </p>
+        <ol style={{ marginLeft: '20px', marginBottom: '16px', color: '#000000' }}>
+          <li><strong>Basic Info:</strong> Name your agent, add a description, and choose an icon</li>
+          <li><strong>Purpose:</strong> Define what your agent does in 1-2 sentences</li>
+          <li><strong>Rules:</strong> Add "always" or "never" statements to constrain behavior</li>
+          <li><strong>Tone & Style:</strong> Choose how the agent communicates (serious, friendly, playful, blunt)</li>
+          <li><strong>Preview:</strong> See how your fields compile into a system prompt</li>
+        </ol>
 
-        <ul style={{ marginLeft: '20px', marginBottom: '16px', color: '#000000' }}>
-          <li>
-            <strong>PM95.sys</strong> - Helps you define what to build, reduce ambiguity, and make product decisions.
-            Focuses on clarity, scope, and outcomes.
-          </li>
-          <li>
-            <strong>Fixit.bat</strong> - A debugging and troubleshooting specialist. Helps diagnose and fix technical
-            problems with step-by-step guidance.
-          </li>
-          <li>
-            <strong>Tinkerer.dll</strong> - A creative technologist who generates playful, experimental coding ideas.
-            Perfect for discovering fun projects worth building.
-          </li>
-          <li>
-            <strong>Builder.exe</strong> - A pragmatic software builder focused on turning ideas into working products.
-            Provides concrete technical steps and realistic architectures.
-          </li>
-        </ul>
+        <p style={{ marginBottom: '16px', color: '#000000' }}>
+          After saving, your agent appears as an icon on the desktop. Double-click it to start chatting!
+        </p>
 
         <h2 style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '20px', marginBottom: '8px', color: '#000000' }}>
-          Control Panel
+          Understanding Agent Manifests
         </h2>
 
         <p style={{ marginBottom: '12px', color: '#000000' }}>
-          The Control Panel (⚙️ icon) lets you:
+          Each agent is defined by a <strong>manifest</strong> - a structured description that gets compiled
+          into a system prompt. The manifest fields map to different parts of the prompt:
         </p>
         <ul style={{ marginLeft: '20px', marginBottom: '16px', color: '#000000' }}>
-          <li>Edit your user context (name, role, projects, tone)</li>
-          <li>Add custom instructions for each agent</li>
+          <li><strong>Purpose</strong> → Mission statement</li>
+          <li><strong>Rules</strong> → Behavior constraints and boundaries</li>
+          <li><strong>Tone</strong> → Communication style instructions</li>
+          <li><strong>Output Style</strong> → Formatting and length guidelines</li>
         </ul>
 
         <p style={{ marginBottom: '16px', color: '#000000' }}>
-          Changes are saved automatically and will be used in all future conversations.
+          In Agent Creator, the Preview step shows you exactly how these fields compile into a complete prompt.
+          This teaches you how prompt engineering works!
         </p>
+
+        <h2 style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '20px', marginBottom: '8px', color: '#000000' }}>
+          Playground
+        </h2>
+
+        <p style={{ marginBottom: '12px', color: '#000000' }}>
+          Use <strong>Playground</strong> to compare responses side-by-side:
+        </p>
+        <ul style={{ marginLeft: '20px', marginBottom: '16px', color: '#000000' }}>
+          <li>Left pane: Raw GPT (no system prompt)</li>
+          <li>Right pane: Your selected agent (with system prompt)</li>
+        </ul>
+
+        <p style={{ marginBottom: '16px', color: '#000000' }}>
+          Enter the same message and compare outputs to see how prompts shape behavior. This is the core
+          learning mechanism of door94!
+        </p>
+
+        <h2 style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '20px', marginBottom: '8px', color: '#000000' }}>
+          Quick Start Workflow
+        </h2>
+
+        <ol style={{ marginLeft: '20px', marginBottom: '16px', color: '#000000' }}>
+          <li>Chat with <strong>Tutorial</strong> to learn about door94</li>
+          <li>Open <strong>Agent Creator</strong> to create your first agent</li>
+          <li>Test your agent in a chat window</li>
+          <li>Use <strong>Playground</strong> to compare it against raw GPT</li>
+          <li>Refine your agent in <strong>Control Panel</strong> → Edit</li>
+          <li>Repeat and experiment!</li>
+        </ol>
+
+        <h2 style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '20px', marginBottom: '8px', color: '#000000' }}>
+          Tips for Good Agent Design
+        </h2>
+
+        <ul style={{ marginLeft: '20px', marginBottom: '16px', color: '#000000' }}>
+          <li><strong>Clear Purpose:</strong> A single, focused purpose works better than trying to do everything</li>
+          <li><strong>Specific Rules:</strong> Use "always" and "never" statements to create predictable behavior</li>
+          <li><strong>Match Tone:</strong> Choose a tone that fits the agent's purpose (serious for PM, playful for creative)</li>
+          <li><strong>Test & Iterate:</strong> Create an agent, test it in Playground, refine the manifest, repeat</li>
+        </ul>
 
         <h2 style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '20px', marginBottom: '8px', color: '#000000' }}>
           Window Management
@@ -127,35 +165,23 @@ export default function ReadMeWindow({
         </ul>
 
         <h2 style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '20px', marginBottom: '8px', color: '#000000' }}>
-          Tips
-        </h2>
-
-        <ul style={{ marginLeft: '20px', marginBottom: '16px', color: '#000000' }}>
-          <li>Each agent has a specific focus - use the right agent for the right task</li>
-          <li>Agents can suggest switching to another agent if your question is outside their scope</li>
-          <li>Your context is shared across all agents, so they all know about your projects and preferences</li>
-          <li>You can customize each agent's behavior in the Control Panel</li>
-        </ul>
-
-        <h2 style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '20px', marginBottom: '8px', color: '#000000' }}>
-          Need Help?
+          What You'll Learn
         </h2>
 
         <p style={{ marginBottom: '12px', color: '#000000' }}>
-          If you're stuck or have questions:
+          By using door94, you'll understand:
         </p>
         <ul style={{ marginLeft: '20px', marginBottom: '16px', color: '#000000' }}>
-          <li>Ask <strong>PM95.sys</strong> for help defining your goals</li>
-          <li>Ask <strong>Fixit.bat</strong> for debugging help</li>
-          <li>Ask <strong>Tinkerer.dll</strong> for creative project ideas</li>
-          <li>Ask <strong>Builder.exe</strong> for implementation guidance</li>
+          <li>How system prompts shape AI behavior</li>
+          <li>The relationship between structured descriptions and prompt engineering</li>
+          <li>How different prompt components (purpose, rules, tone) affect responses</li>
+          <li>Best practices for designing single-purpose, predictable agents</li>
         </ul>
 
         <p style={{ marginTop: '20px', fontStyle: 'italic', color: '#808080' }}>
-          Enjoy exploring Doors94!
+          Have fun experimenting with agent design!
         </p>
       </div>
     </Win95Window>
   )
 }
-

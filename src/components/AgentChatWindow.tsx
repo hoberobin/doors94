@@ -1,8 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { AgentConfig, AgentId } from '@/lib/agents'
-import { getUserContext, serializeUserContext, UserContext, getAgentOverride, saveConversationMemory, ConversationMemory } from '@/lib/userContext'
+import { AgentManifestWithSource } from '@/lib/agentManifest'
 
 interface Message {
   role: 'user' | 'assistant' | 'system'
@@ -10,21 +9,14 @@ interface Message {
 }
 
 interface AgentChatWindowProps {
-  agent: AgentConfig
+  agent: AgentManifestWithSource
 }
 
 export default function AgentChatWindow({ agent }: AgentChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [userContext, setUserContext] = useState<UserContext | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-
-  // Load user context on mount
-  useEffect(() => {
-    const context = getUserContext()
-    setUserContext(context)
-  }, [])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -33,40 +25,6 @@ export default function AgentChatWindow({ agent }: AgentChatWindowProps) {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
-
-  const handleSaveConversation = () => {
-    if (messages.length === 0) return
-    
-    const userMessages = messages.filter(m => m.role === 'user')
-    const assistantMessages = messages.filter(m => m.role === 'assistant')
-    
-    // Create a summary from the first user message
-    const firstUserMessage = userMessages[0]?.content || ''
-    const summary = firstUserMessage.length > 150 
-      ? firstUserMessage.substring(0, 150) + '...'
-      : firstUserMessage || `Conversation with ${agent.name}`
-    
-    // Extract key topics from user messages
-    const keyTopics: string[] = []
-    userMessages.forEach(msg => {
-      // Simple keyword extraction
-      const words = msg.content.toLowerCase().match(/\b\w{5,}\b/g) || []
-      const filtered = words.filter(w => !['about', 'which', 'where', 'there', 'their', 'could', 'would', 'should'].includes(w))
-      keyTopics.push(...filtered.slice(0, 2))
-    })
-    
-    const memory: ConversationMemory = {
-      agentId: agent.id,
-      timestamp: Date.now(),
-      summary: summary,
-      keyTopics: [...new Set(keyTopics)].slice(0, 5),
-    }
-    
-    saveConversationMemory(memory)
-    
-    // Show a brief confirmation (could be enhanced with a toast notification)
-    alert('Conversation saved to history!')
-  }
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return
@@ -82,31 +40,26 @@ export default function AgentChatWindow({ agent }: AgentChatWindowProps) {
     setIsLoading(true)
 
     try {
-      // Serialize user context if available (agent-specific)
-      let serializedContext: string | undefined;
-      try {
-        serializedContext = userContext ? serializeUserContext(userContext, agent.id) : undefined;
-      } catch (contextError) {
-        console.error('Error serializing user context:', contextError);
-        // Continue without context if serialization fails
-        serializedContext = undefined;
-      }
-      
-      // Get agent override if available
-      const agentOverride = getAgentOverride(agent.id)
-
+      // Send full manifest to API (Option A from plan)
       const requestBody = {
-        agentId: agent.id as AgentId,
+        agentManifest: {
+          id: agent.id,
+          name: agent.name,
+          description: agent.description,
+          icon: agent.icon,
+          purpose: agent.purpose,
+          rules: agent.rules,
+          tone: agent.tone,
+          outputStyle: agent.outputStyle,
+        },
         messages: updatedMessages,
-        userContext: serializedContext,
-        agentOverride: agentOverride || undefined,
+        mode: 'agent' as const,
       };
 
       console.log('Sending request to /api/chat with:', {
-        agentId: requestBody.agentId,
+        agentId: requestBody.agentManifest.id,
+        agentName: requestBody.agentManifest.name,
         messageCount: requestBody.messages.length,
-        hasContext: !!requestBody.userContext,
-        hasOverride: !!requestBody.agentOverride,
       });
 
       const response = await fetch('/api/chat', {
@@ -149,21 +102,6 @@ export default function AgentChatWindow({ agent }: AgentChatWindowProps) {
     }
   }
 
-  // Build user info string for display
-  const getUserInfoString = () => {
-    if (!userContext) return null
-    const parts: string[] = []
-    if (userContext.name) {
-      parts.push(userContext.name)
-    }
-    if (userContext.role) {
-      parts.push(userContext.role)
-    }
-    return parts.length > 0 ? parts.join(' / ') : null
-  }
-
-  const userInfoString = getUserInfoString()
-
   return (
     <div
       style={{
@@ -173,22 +111,6 @@ export default function AgentChatWindow({ agent }: AgentChatWindowProps) {
         minHeight: '300px',
       }}
     >
-      {/* User info line */}
-      {userInfoString && (
-        <div
-          style={{
-            padding: '6px 8px',
-            fontSize: '10px',
-            color: '#000000',
-            backgroundColor: '#e0e0e0',
-            borderBottom: '1px solid var(--win95-border-dark)',
-            fontStyle: 'italic',
-          }}
-        >
-          Running as {agent.name} for {userInfoString}
-        </div>
-      )}
-
       {/* Messages area */}
       <div
         style={{
@@ -294,20 +216,6 @@ export default function AgentChatWindow({ agent }: AgentChatWindowProps) {
 
       {/* Input area */}
       <div>
-        {messages.length > 0 && (
-          <div style={{ marginBottom: '4px', display: 'flex', justifyContent: 'flex-end' }}>
-            <button
-              onClick={handleSaveConversation}
-              className="win95-button"
-              style={{
-                fontSize: '10px',
-                padding: '2px 8px',
-              }}
-            >
-              💾 Save Conversation
-            </button>
-          </div>
-        )}
         <div
           style={{
             display: 'flex',
@@ -350,4 +258,3 @@ export default function AgentChatWindow({ agent }: AgentChatWindowProps) {
     </div>
   )
 }
-

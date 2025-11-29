@@ -5,11 +5,12 @@ import Desktop from '@/components/Desktop'
 import Taskbar from '@/components/Taskbar'
 import Win95Window from '@/components/Win95Window'
 import AgentChatWindow from '@/components/AgentChatWindow'
-import SetupWizard95 from '@/components/SetupWizard95'
 import ControlPanelWindow from '@/components/ControlPanelWindow'
 import ReadMeWindow from '@/components/ReadMeWindow'
-import { getAgentById } from '@/lib/agents'
-import { getUserContext } from '@/lib/userContext'
+import AgentLabWindow from '@/components/AgentLabWindow'
+import PlaygroundWindow from '@/components/PlaygroundWindow'
+import { getAllAgents, getAgentByIdAndSource } from '@/lib/agentStorage'
+import { AgentManifestWithSource } from '@/lib/agentManifest'
 
 interface Window {
   id: string
@@ -27,20 +28,9 @@ export default function Home() {
   const [windows, setWindows] = useState<Window[]>([])
   const [activeWindowId, setActiveWindowId] = useState<string | null>(null)
   const [windowCounter, setWindowCounter] = useState(0)
-  const [showSetupWizard, setShowSetupWizard] = useState(false)
-  const [setupWizardPosition, setSetupWizardPosition] = useState({ x: 150, y: 100 })
-  const [setupWizardSize, setSetupWizardSize] = useState({ width: 500, height: 400 })
+  // Setup wizard removed - no personal info collection needed for sandbox
 
-  // Check for user context on mount
-  useEffect(() => {
-    const userContext = getUserContext()
-    if (!userContext) {
-      setShowSetupWizard(true)
-      setActiveWindowId('setup-wizard')
-    }
-  }, [])
-
-  const handleOpenWindow = (windowId: string, appId: string, title: string, agentId?: string) => {
+  const handleOpenWindow = (windowId: string, appId: string, title: string, agentId?: string, source?: 'builtin' | 'user', editAgentId?: string) => {
     // Check if window already exists
     const existingWindow = windows.find((w) => w.id === windowId)
     if (existingWindow) {
@@ -60,14 +50,17 @@ export default function Home() {
     }
 
     // Create new window with offset positioning
-    const defaultWidth = appId === 'control_panel' ? 600 : appId === 'readme' ? 550 : 500
-    const defaultHeight = appId === 'control_panel' ? 500 : appId === 'readme' ? 500 : 400
+    const defaultWidth = appId === 'control_panel' ? 600 : appId === 'readme' ? 550 : appId === 'agent_lab' ? 600 : appId === 'playground' ? 800 : 500
+    const defaultHeight = appId === 'control_panel' ? 500 : appId === 'readme' ? 500 : appId === 'agent_lab' ? 500 : appId === 'playground' ? 600 : 400
+    
+    // For Agent Lab edit mode, use editAgentId if provided
+    const finalAgentId = appId === 'agent_lab' && editAgentId ? editAgentId : agentId
     
     const newWindow: Window = {
       id: windowId,
       title,
       appId,
-      agentId,
+      agentId: finalAgentId,
       minimized: false,
       x: 100 + (windowCounter % 5) * 30,
       y: 50 + (windowCounter % 5) * 30,
@@ -129,24 +122,6 @@ export default function Home() {
     )
   }
 
-  const handleSetupWizardFinish = () => {
-    setShowSetupWizard(false)
-    if (activeWindowId === 'setup-wizard') {
-      setActiveWindowId(null)
-    }
-  }
-
-  const handleSetupWizardClose = () => {
-    // Don't allow closing the wizard if no user context exists
-    const userContext = getUserContext()
-    if (!userContext) {
-      return // Prevent closing
-    }
-    setShowSetupWizard(false)
-    if (activeWindowId === 'setup-wizard') {
-      setActiveWindowId(null)
-    }
-  }
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
@@ -155,12 +130,45 @@ export default function Home() {
       {windows.map((window) => {
         if (window.minimized) return null
 
-        const agent = window.agentId ? getAgentById(window.agentId) : null
+        // Get agent manifest if agentId is present
+        let agent: AgentManifestWithSource | null = null
+        if (window.agentId) {
+          // Try to find agent from all agents
+          const allAgents = getAllAgents()
+          agent = allAgents.find(a => a.id === window.agentId) || null
+        }
 
         // Render Control Panel window
         if (window.appId === 'control_panel') {
           return (
             <ControlPanelWindow
+              key={window.id}
+              isActive={activeWindowId === window.id}
+              onClose={() => handleCloseWindow(window.id)}
+              onMinimize={() => handleMinimizeWindow(window.id)}
+              onClick={() => handleWindowClick(window.id)}
+              onMove={(x, y) => handleWindowMove(window.id, x, y)}
+              onResize={(width, height) => handleWindowResize(window.id, width, height)}
+              onAgentUpdated={() => {
+                // Refresh desktop to show updated agent icons
+                if (typeof location !== 'undefined') {
+                  location.reload()
+                }
+              }}
+              style={{
+                left: `${window.x}px`,
+                top: `${window.y}px`,
+                width: `${window.width}px`,
+                height: `${window.height}px`,
+              }}
+            />
+          )
+        }
+
+        // Render Read Me window
+        if (window.appId === 'readme') {
+          return (
+            <ReadMeWindow
               key={window.id}
               isActive={activeWindowId === window.id}
               onClose={() => handleCloseWindow(window.id)}
@@ -178,10 +186,42 @@ export default function Home() {
           )
         }
 
-        // Render Read Me window
-        if (window.appId === 'readme') {
+        // Render Agent Lab window
+        if (window.appId === 'agent_lab') {
+          const windowId = window.id
           return (
-            <ReadMeWindow
+            <AgentLabWindow
+              key={windowId}
+              isActive={activeWindowId === windowId}
+              onClose={() => handleCloseWindow(windowId)}
+              onMinimize={() => handleMinimizeWindow(windowId)}
+              onClick={() => handleWindowClick(windowId)}
+              onMove={(x, y) => handleWindowMove(windowId, x, y)}
+              onResize={(width, height) => handleWindowResize(windowId, width, height)}
+              agentId={window.agentId} // Pass agentId for edit mode
+              onAgentCreated={(agentId) => {
+                // Agent created - could trigger desktop refresh here if needed
+                // For now, just close the window
+                handleCloseWindow(windowId)
+                // Trigger a page refresh to show new agent icon (simple approach for v1)
+                if (typeof location !== 'undefined') {
+                  location.reload()
+                }
+              }}
+              style={{
+                left: `${window.x}px`,
+                top: `${window.y}px`,
+                width: `${window.width}px`,
+                height: `${window.height}px`,
+              }}
+            />
+          )
+        }
+
+        // Render Playground window
+        if (window.appId === 'playground') {
+          return (
+            <PlaygroundWindow
               key={window.id}
               isActive={activeWindowId === window.id}
               onClose={() => handleCloseWindow(window.id)}
@@ -229,33 +269,6 @@ export default function Home() {
           </Win95Window>
         )
       })}
-
-      {showSetupWizard && (
-        <SetupWizard95
-          isActive={activeWindowId === 'setup-wizard'}
-          onClose={handleSetupWizardClose}
-          onMinimize={() => {
-            // Minimize wizard
-            if (activeWindowId === 'setup-wizard') {
-              setActiveWindowId(null)
-            }
-          }}
-          onClick={() => setActiveWindowId('setup-wizard')}
-          onFinish={handleSetupWizardFinish}
-          onMove={(x, y) => {
-            setSetupWizardPosition({ x, y })
-          }}
-          onResize={(width, height) => {
-            setSetupWizardSize({ width, height })
-          }}
-          style={{
-            left: `${setupWizardPosition.x}px`,
-            top: `${setupWizardPosition.y}px`,
-            width: `${setupWizardSize.width}px`,
-            height: `${setupWizardSize.height}px`,
-          }}
-        />
-      )}
 
       <Taskbar
         windows={windows}

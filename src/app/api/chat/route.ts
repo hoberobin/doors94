@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import { getAgentById, AgentId } from '@/lib/agents';
+import { AgentManifest, buildSystemPrompt, validateAgentManifest } from '@/lib/agentManifest';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+const MAX_PROMPT_LENGTH = 4000; // Characters, roughly 1000 tokens
 
 export async function POST(request: NextRequest) {
   console.log('[API] Chat request received');
@@ -14,40 +16,17 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     console.log('[API] Request body parsed successfully');
     
-    const { agentId, messages, userContext, agentOverride } = body as {
-      agentId: AgentId;
+    const { agentManifest, messages, mode } = body as {
+      agentManifest?: AgentManifest;
       messages: { role: 'user' | 'assistant' | 'system'; content: string }[];
-      userContext?: string;
-      agentOverride?: string;
+      mode?: 'raw' | 'agent';
     };
 
     console.log('[API] Request data:', {
-      agentId,
+      hasManifest: !!agentManifest,
       messageCount: messages?.length,
-      hasContext: !!userContext,
-      hasOverride: !!agentOverride,
+      mode: mode || 'agent',
     });
-
-    // Validate agentId
-    if (!agentId) {
-      console.error('[API] Missing agentId');
-      return NextResponse.json(
-        { error: 'agentId is required' },
-        { status: 400 }
-      );
-    }
-
-    // Get agent config
-    console.log('[API] Getting agent config...');
-    const agent = getAgentById(agentId);
-    if (!agent) {
-      console.error('[API] Agent not found:', agentId);
-      return NextResponse.json(
-        { error: `Agent with id "${agentId}" not found` },
-        { status: 404 }
-      );
-    }
-    console.log('[API] Agent found:', agent.name);
 
     // Validate messages
     if (!Array.isArray(messages) || messages.length === 0) {
@@ -68,40 +47,76 @@ export async function POST(request: NextRequest) {
     }
     console.log('[API] API key found');
 
-    // Build system message
-    console.log('[API] Building system prompt...');
-    let systemPrompt = agent.baseSystemPrompt;
-    
-    // Append agent override if provided
-    if (agentOverride && agentOverride.trim()) {
-      systemPrompt = `${systemPrompt}\n\n${agentOverride.trim()}`;
-    }
-    
-    // Append user context if provided
-    if (userContext) {
-      systemPrompt = `${systemPrompt}\n\n---\n\nUser profile and preferences: ${userContext}`;
+    let systemPrompt: string | undefined = undefined;
+
+    // Handle raw mode (no system prompt)
+    if (mode === 'raw') {
+      console.log('[API] Raw mode - no system prompt');
+      systemPrompt = undefined;
+    } else {
+      // Agent mode - require manifest
+      if (!agentManifest) {
+        console.error('[API] Missing agentManifest for agent mode');
+        return NextResponse.json(
+          { error: 'agentManifest is required when mode is not "raw"' },
+          { status: 400 }
+        );
+      }
+
+      // Validate manifest
+      const validation = validateAgentManifest(agentManifest);
+      if (!validation.valid) {
+        console.error('[API] Invalid agent manifest:', validation.errors);
+        return NextResponse.json(
+          { error: `Invalid agent manifest: ${validation.errors.join(', ')}` },
+          { status: 400 }
+        );
+      }
+
+      // Build system prompt from manifest
+      console.log('[API] Building system prompt from manifest...');
+      systemPrompt = buildSystemPrompt(agentManifest);
+
+      // Check prompt length
+      if (systemPrompt.length > MAX_PROMPT_LENGTH) {
+        console.error('[API] System prompt too long:', systemPrompt.length);
+        return NextResponse.json(
+          { 
+            error: `System prompt too long (${systemPrompt.length} chars, max ${MAX_PROMPT_LENGTH}). Please reduce agent manifest fields.` 
+          },
+          { status: 400 }
+        );
+      }
+
+      console.log('[API] System prompt built:', systemPrompt.length, 'characters');
     }
 
     // Build messages array for OpenAI
-    // First message is the system message, then filter out any previous system messages from client messages
-    const openaiMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
-      {
+    const openaiMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
+    
+    // Add system message if present
+    if (systemPrompt) {
+      openaiMessages.push({
         role: 'system',
         content: systemPrompt,
-      },
+      });
+    }
+    
+    // Add user/assistant messages (filter out any system messages from client)
+    openaiMessages.push(
       ...messages
-        .filter((msg) => msg.role !== 'system') // Exclude any system messages from client
+        .filter((msg) => msg.role !== 'system')
         .map((msg) => ({
           role: msg.role as 'user' | 'assistant',
           content: msg.content,
-        })),
-    ];
+        }))
+    );
 
     console.log('[API] Calling OpenAI API with', openaiMessages.length, 'messages');
     
     // Call OpenAI API
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini', // Using gpt-4o-mini (similar to gpt-4.1-mini)
+      model: 'gpt-4o-mini',
       messages: openaiMessages,
       temperature: 0.7,
     });
@@ -142,4 +157,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
