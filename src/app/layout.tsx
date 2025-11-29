@@ -4,8 +4,8 @@ import { AgentProvider } from '@/contexts/AgentContext'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 export const metadata: Metadata = {
-  title: 'doors94 - a Windows 95 style Custom AI Agents Creator Sandbox',
-  description: 'doors94 - a Windows 95 style Custom AI Agents Creator Sandbox',
+  title: 'doors94 - A Windows 95-style sandbox for learning AI agent design through hands-on experimentation.',
+  description: 'doors94 - A Windows 95-style sandbox for learning AI agent design through hands-on experimentation.',
 }
 
 export default function RootLayout({

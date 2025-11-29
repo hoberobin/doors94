@@ -1,7 +1,7 @@
 {
   "name": "doors94",
   "version": "0.1.0",
-  "description": "A Windows 95-style sandbox for learning AI agent design through hands-on experimentation",
+  "description": "A Windows 95-style sandbox for learning AI agent design through hands-on experimentation.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
