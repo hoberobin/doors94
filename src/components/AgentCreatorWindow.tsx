@@ -45,6 +45,7 @@ export default function AgentCreatorWindow({
   
   const [validationErrors, setValidationErrors] = useState<string[]>([])
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [showExampleConfirm, setShowExampleConfirm] = useState(false)
 
   /**
    * Loads existing agent data when in edit mode.
@@ -141,27 +142,30 @@ export default function AgentCreatorWindow({
   }
 
   const handleLoadExample = () => {
-    if (confirm('Load example agent template? This will replace your current values.')) {
-      setName('PirateMatey.exe')
-      setDescription('A boisterous pirate who answers questions in full pirate speak while still being helpful.')
-      setIcon('🏴‍☠️')
-      setPurpose(
-        'Help users with their questions while always speaking and acting like a classic pirate. ' +
-          'Use nautical metaphors, pirate slang, and playful bravado while still giving accurate, useful answers.'
-      )
-      setRules([
-        "Always speak in a pirate's voice using words like \"arrr\", \"matey\", \"captain\", and \"ship\".",
-        'Always sprinkle in nautical metaphors when explaining concepts.',
-        'Never drop the pirate persona, even for technical topics.',
-        'Never use modern internet slang or emojis.',
-        'Always stay friendly, light-hearted, and a bit dramatic.',
-      ])
-      setTone('playful')
-      setOutputStyle(
-        'Use short paragraphs and colorful pirate expressions. ' +
-          'Start most replies with a pirate-flavored greeting (like \"Ahoy matey\"), and end with a playful pirate sign-off.'
-      )
-    }
+    setShowExampleConfirm(true)
+  }
+
+  const applyExampleTemplate = () => {
+    setName('PirateMatey.exe')
+    setDescription('A boisterous pirate who answers questions in full pirate speak while still being helpful.')
+    setIcon('🏴‍☠️')
+    setPurpose(
+      'Help users with their questions while always speaking and acting like a classic pirate. ' +
+        'Use nautical metaphors, pirate slang, and playful bravado while still giving accurate, useful answers.'
+    )
+    setRules([
+      "Always speak in a pirate's voice using words like \"arrr\", \"matey\", \"captain\", and \"ship\".",
+      'Always sprinkle in nautical metaphors when explaining concepts.',
+      'Never drop the pirate persona, even for technical topics.',
+      'Never use modern internet slang or emojis.',
+      'Always stay friendly, light-hearted, and a bit dramatic.',
+    ])
+    setTone('playful')
+    setOutputStyle(
+      'Use short paragraphs and colorful pirate expressions. ' +
+        'Start most replies with a pirate-flavored greeting (like \"Ahoy matey\"), and end with a playful pirate sign-off.'
+    )
+    setShowExampleConfirm(false)
   }
 
   const handleSave = () => {
@@ -555,86 +559,147 @@ export default function AgentCreatorWindow({
   }
 
   return (
-    <Win95Window
-      title={isEditMode ? `Agent Editor - ${name || agentId}` : "Agent Creator"}
-      isActive={isActive}
-      onClose={onClose}
-      onMinimize={onMinimize}
-      onClick={onClick}
-      onMove={onMove}
-      onResize={onResize}
-      style={style}
-    >
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100%',
-          minHeight: '400px',
-        }}
+    <>
+      <Win95Window
+        title={isEditMode ? `Agent Editor - ${name || agentId}` : "Agent Creator"}
+        isActive={isActive}
+        onClose={onClose}
+        onMinimize={onMinimize}
+        onClick={onClick}
+        onMove={onMove}
+        onResize={onResize}
+        style={style}
       >
-        <div style={{ flex: 1, overflow: 'auto' }}>{renderStep()}</div>
         <div
           style={{
-            borderTop: '2px solid var(--win95-border-dark)',
-            padding: '12px',
             display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            backgroundColor: '#c0c0c0',
+            flexDirection: 'column',
+            height: '100%',
+            minHeight: '400px',
           }}
         >
-          <div style={{ fontSize: '11px', color: '#808080' }}>
-            Step {step} of 5
-          </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            {step > 1 && (
+          <div style={{ flex: 1, overflow: 'auto' }}>{renderStep()}</div>
+          <div
+            style={{
+              borderTop: '2px solid var(--win95-border-dark)',
+              padding: '12px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              backgroundColor: '#c0c0c0',
+            }}
+          >
+            <div style={{ fontSize: '11px', color: '#808080' }}>
+              Step {step} of 5
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {step > 1 && (
+                <button
+                  className="win95-button"
+                  onClick={handleBack}
+                  style={{ minWidth: '70px' }}
+                >
+                  Back
+                </button>
+              )}
+              {step < 5 ? (
+                <button
+                  className="win95-button"
+                  onClick={handleNext}
+                  disabled={!canProceed()}
+                  style={{
+                    minWidth: '70px',
+                    opacity: canProceed() ? 1 : 0.5,
+                    cursor: canProceed() ? 'pointer' : 'not-allowed',
+                  }}
+                >
+                  Next
+                </button>
+              ) : (
+                <button
+                  className="win95-button"
+                  onClick={handleSave}
+                  disabled={!canProceed()}
+                  style={{
+                    minWidth: '70px',
+                    opacity: canProceed() ? 1 : 0.5,
+                    cursor: canProceed() ? 'pointer' : 'not-allowed',
+                  }}
+                >
+                  {isEditMode ? 'Save Changes' : 'Create Agent'}
+                </button>
+              )}
               <button
                 className="win95-button"
-                onClick={handleBack}
+                onClick={onClose}
                 style={{ minWidth: '70px' }}
               >
-                Back
+                Cancel
               </button>
-            )}
-            {step < 5 ? (
-              <button
-                className="win95-button"
-                onClick={handleNext}
-                disabled={!canProceed()}
-                style={{
-                  minWidth: '70px',
-                  opacity: canProceed() ? 1 : 0.5,
-                  cursor: canProceed() ? 'pointer' : 'not-allowed',
-                }}
-              >
-                Next
-              </button>
-            ) : (
-              <button
-                className="win95-button"
-                onClick={handleSave}
-                disabled={!canProceed()}
-                style={{
-                  minWidth: '70px',
-                  opacity: canProceed() ? 1 : 0.5,
-                  cursor: canProceed() ? 'pointer' : 'not-allowed',
-                }}
-              >
-                {isEditMode ? 'Save Changes' : 'Create Agent'}
-              </button>
-            )}
+            </div>
+          </div>
+        </div>
+      </Win95Window>
+
+      {showExampleConfirm && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 2000,
+            backgroundColor: '#c0c0c0',
+            border: '2px solid',
+            borderColor:
+              'var(--win95-border-light) var(--win95-border-darker) var(--win95-border-darker) var(--win95-border-light)',
+            boxShadow:
+              '2px 2px 0 0 var(--win95-shadow-dark), -2px -2px 0 0 var(--win95-shadow-light)',
+            padding: '16px',
+            minWidth: '280px',
+            maxWidth: '420px',
+          }}
+        >
+          <div
+            style={{
+              fontSize: '12px',
+              fontWeight: 'bold',
+              marginBottom: '8px',
+              color: '#000000',
+            }}
+          >
+            Load example agent?
+          </div>
+          <div
+            style={{
+              fontSize: '11px',
+              marginBottom: '16px',
+              color: '#000000',
+              lineHeight: '1.4',
+            }}
+          >
+            This will replace your current fields with a pre-filled pirate themed example. You can
+            always tweak it afterwards, but any unsaved text here will be lost.
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
             <button
               className="win95-button"
-              onClick={onClose}
-              style={{ minWidth: '70px' }}
+              onClick={() => setShowExampleConfirm(false)}
+              style={{ minWidth: '80px' }}
             >
-              Cancel
+              Keep my changes
+            </button>
+            <button
+              className="win95-button"
+              onClick={applyExampleTemplate}
+              style={{ minWidth: '110px' }}
+            >
+              Load example
             </button>
           </div>
         </div>
-      </div>
-    </Win95Window>
+      )}
+    </>
   )
 }
 

@@ -40,17 +40,19 @@ export default function PlaygroundWindow({
   const [rawError, setRawError] = useState<string | null>(null)
   const [agentError, setAgentError] = useState<string | null>(null)
 
-  // Map agents to AgentManifest format
-  const agents: AgentManifest[] = allAgents.map(a => ({
-    id: a.id,
-    name: a.name,
-    description: a.description,
-    icon: a.icon,
-    purpose: a.purpose,
-    rules: a.rules,
-    tone: a.tone,
-    outputStyle: a.outputStyle,
-  }))
+  // Map agents to AgentManifest format, excluding the Tutorial helper agent
+  const agents: AgentManifest[] = allAgents
+    .filter(a => a.id !== 'tutorial')
+    .map(a => ({
+      id: a.id,
+      name: a.name,
+      description: a.description,
+      icon: a.icon,
+      purpose: a.purpose,
+      rules: a.rules,
+      tone: a.tone,
+      outputStyle: a.outputStyle,
+    }))
 
   // Select first agent by default
   useEffect(() => {
