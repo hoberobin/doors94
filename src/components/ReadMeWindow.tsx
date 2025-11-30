@@ -142,7 +142,7 @@ export default function ReadMeWindow({
           <li>Open <strong>Agent Creator</strong> to create your first agent</li>
           <li>Test your agent in a chat window</li>
           <li>Use <strong>Playground</strong> to compare it against raw GPT</li>
-          <li>Refine your agent in <strong>Control Panel</strong> → Edit</li>
+          <li>Refine your agent in <strong>Manage Agents</strong> → Edit</li>
           <li>Repeat and experiment!</li>
         </ol>
 

@@ -3,7 +3,7 @@
 ### Desktop & Window UX
 
 - **Discoverability of key features**
-  - The bottom-right desktop cluster (`Read Me`, `Agent Creator`, `Playground`, `Control Panel`) is clear once noticed, but on smaller screens it can feel visually distant from the main focus area.
+  - The bottom-right desktop cluster (`Read Me`, `Agent Creator`, `Playground`, `Manage Agents`) is clear once noticed, but on smaller screens it can feel visually distant from the main focus area.
   - Consider opening at least one helpful window by default on first load (e.g., `Read Me` or a small \"Welcome\" window) so new users immediately see what to do.
   - The new landing page now explains the core loop before users enter the desktop, which helps set expectations.
 
@@ -29,7 +29,7 @@
   - The \"Load Example\" button is great for demonstrating a high-quality manifest; consider hint text near it (\"Good starting point if you're new to prompts\").
   - Improvement idea: surface a small, inline \"What makes a good rule?\" example under the Rules step, reusing content from `ReadMeWindow`.
 
-- **Control Panel**
+- **Manage Agents**
   - Inline editing with live compiled-prompt preview is powerful and clearly reflects validation issues.
   - Edit vs view modes are explicit; success and delete confirmation dialogs follow the Win95 aesthetic nicely.
   - Improvement idea: add a one-line helper above the agent list explaining built-in vs user agents and how to use Duplicate to iterate.

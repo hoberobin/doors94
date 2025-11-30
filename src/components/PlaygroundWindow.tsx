@@ -170,7 +170,7 @@ export default function PlaygroundWindow({
           minHeight: '500px',
         }}
       >
-        {/* Control Panel */}
+        {/* Agent Selection Controls */}
         <div
           style={{
             padding: '12px',

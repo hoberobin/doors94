@@ -25,7 +25,7 @@ export default function LandingPage() {
         {/* Hero / primary window */}
         <section className="win95-window">
           <div className="win95-window-titlebar">
-            <span>doors94 Setup</span>
+            <span>Getting Started</span>
           </div>
           <div className="win95-window-body">
             <h1
@@ -34,7 +34,7 @@ export default function LandingPage() {
                 marginBottom: '8px',
               }}
             >
-              doors94
+              Welcome to doors94
             </h1>
             <p
               style={{
@@ -162,7 +162,7 @@ export default function LandingPage() {
                 <ul style={{ paddingLeft: '18px', marginBottom: '8px' }}>
                   <li>Agent Creator wizard for building custom AI agents.</li>
                   <li>Playground for side-by-side comparisons with raw GPT.</li>
-                  <li>Control Panel to manage, duplicate, and delete agents.</li>
+                  <li>Manage Agents to manage, duplicate, and delete agents.</li>
                   <li>Authentic Windows 95-style desktop, windows, and taskbar.</li>
                   <li>Built-in tutorial and real-time validation while you edit.</li>
                 </ul>
@@ -181,8 +181,7 @@ export default function LandingPage() {
                   Open-source by design
                 </h2>
                 <p>
-                  doors94 is an open-source MIT-licensed project. You can read every line of code, learn from
-                  how it’s built, and remix it into your own tooling or teaching demos. Contributions, issues,
+                  doors94 is an open-source MIT-licensed project. Contributions, issues,
                   and ideas are welcome in the GitHub repo.
                 </p>
               </div>

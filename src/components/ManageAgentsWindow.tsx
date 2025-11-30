@@ -7,7 +7,7 @@ import { deleteUserAgent, duplicateUserAgent, saveUserAgent, getUserAgent } from
 import { useDebounce } from '@/hooks/useDebounce'
 import { useAgents } from '@/contexts/AgentContext'
 
-interface ControlPanelWindowProps {
+interface ManageAgentsWindowProps {
   isActive: boolean
   onClose: () => void
   onMinimize: () => void
@@ -18,7 +18,7 @@ interface ControlPanelWindowProps {
   onAgentUpdated?: () => void // Callback when agent is saved (to refresh desktop)
 }
 
-export default function ControlPanelWindow({
+export default function ManageAgentsWindow({
   isActive,
   onClose,
   onMinimize,
@@ -27,7 +27,7 @@ export default function ControlPanelWindow({
   onResize,
   style,
   onAgentUpdated,
-}: ControlPanelWindowProps) {
+}: ManageAgentsWindowProps) {
   const { agents, refreshAgents } = useAgents()
   const [selectedAgent, setSelectedAgent] = useState<AgentManifestWithSource | null>(null)
   const [isEditMode, setIsEditMode] = useState(false)
@@ -245,7 +245,7 @@ export default function ControlPanelWindow({
   return (
     <>
       <Win95Window
-        title="Control Panel - Agent Manager"
+        title="Manage Agents"
         isActive={isActive}
         onClose={onClose}
         onMinimize={onMinimize}
@@ -804,3 +804,4 @@ export default function ControlPanelWindow({
     </>
   )
 }
+

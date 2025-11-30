@@ -95,7 +95,7 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
         ))}
       </div>
 
-      {/* Bottom Right: Read Me, Agent Lab, and Control Panel */}
+      {/* Bottom Right: Read Me, Agent Lab, and Manage Agents */}
       <div
         style={{
           position: 'fixed',
@@ -123,8 +123,8 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
         />
         <Icon
           icon="⚙️"
-          label="Control Panel"
-          onDoubleClick={() => onOpenWindow('control_panel', 'control_panel', 'Control Panel')}
+          label="Manage Agents"
+          onDoubleClick={() => onOpenWindow('manage_agents', 'manage_agents', 'Manage Agents')}
         />
       </div>
     </>

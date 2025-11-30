@@ -5,7 +5,7 @@ import Desktop from '@/components/Desktop'
 import Taskbar from '@/components/Taskbar'
 import Win95Window from '@/components/Win95Window'
 import AgentChatWindow from '@/components/AgentChatWindow'
-import ControlPanelWindow from '@/components/ControlPanelWindow'
+import ManageAgentsWindow from '@/components/ManageAgentsWindow'
 import ReadMeWindow from '@/components/ReadMeWindow'
 import AgentCreatorWindow from '@/components/AgentCreatorWindow'
 import PlaygroundWindow from '@/components/PlaygroundWindow'
@@ -35,17 +35,37 @@ export default function AppDesktop() {
   useEffect(() => {
     const saved = loadWindowStates()
     if (saved.length > 0) {
-      const restoredWindows: WindowState[] = saved.map((w) => ({
-        id: w.id,
-        title: w.title,
-        appId: w.appId,
-        agentId: w.agentId,
-        minimized: w.minimized,
-        x: w.x,
-        y: w.y,
-        width: w.width,
-        height: w.height,
-      }))
+      // Filter out old 'control_panel' windows and map to WindowState
+      const restoredWindows: WindowState[] = saved
+        .filter((w) => w.appId !== 'control_panel') // Remove old control panel windows
+        .map((w) => ({
+          id: w.id,
+          title: w.title,
+          appId: w.appId,
+          agentId: w.agentId,
+          minimized: w.minimized,
+          x: w.x,
+          y: w.y,
+          width: w.width,
+          height: w.height,
+        }))
+      
+      // If we filtered out any windows, update localStorage to remove them
+      if (restoredWindows.length !== saved.length) {
+        const statesToSave: SavedWindowState[] = restoredWindows.map((w) => ({
+          id: w.id,
+          title: w.title,
+          appId: w.appId,
+          agentId: w.agentId,
+          minimized: w.minimized,
+          x: w.x,
+          y: w.y,
+          width: w.width,
+          height: w.height,
+        }))
+        saveWindowStates(statesToSave)
+      }
+      
       setWindows(restoredWindows)
       // Restore active window if any
       if (restoredWindows.length > 0 && !restoredWindows[0].minimized) {
@@ -57,17 +77,20 @@ export default function AppDesktop() {
   // Save window states whenever they change
   useEffect(() => {
     if (windows.length > 0) {
-      const statesToSave: SavedWindowState[] = windows.map((w) => ({
-        id: w.id,
-        title: w.title,
-        appId: w.appId,
-        agentId: w.agentId,
-        minimized: w.minimized,
-        x: w.x,
-        y: w.y,
-        width: w.width,
-        height: w.height,
-      }))
+      // Filter out any old 'control_panel' windows before saving
+      const statesToSave: SavedWindowState[] = windows
+        .filter((w) => w.appId !== 'control_panel') // Prevent saving old control panel windows
+        .map((w) => ({
+          id: w.id,
+          title: w.title,
+          appId: w.appId,
+          agentId: w.agentId,
+          minimized: w.minimized,
+          x: w.x,
+          y: w.y,
+          width: w.width,
+          height: w.height,
+        }))
       saveWindowStates(statesToSave)
     }
   }, [windows])
@@ -100,7 +123,7 @@ export default function AppDesktop() {
 
     // Create new window with offset positioning
     const defaultWidth =
-      appId === 'control_panel'
+      appId === 'manage_agents'
         ? 600
         : appId === 'readme'
         ? 550
@@ -110,7 +133,7 @@ export default function AppDesktop() {
         ? 800
         : 500
     const defaultHeight =
-      appId === 'control_panel'
+      appId === 'manage_agents'
         ? 500
         : appId === 'readme'
         ? 500
@@ -259,10 +282,10 @@ export default function AppDesktop() {
           agent = agents.find(a => a.id === window.agentId) || null
         }
 
-        // Render Control Panel window
-        if (window.appId === 'control_panel') {
+        // Render Manage Agents window
+        if (window.appId === 'manage_agents') {
           return (
-            <ControlPanelWindow
+            <ManageAgentsWindow
               key={window.id}
               isActive={activeWindowId === window.id}
               onClose={() => handleCloseWindow(window.id)}

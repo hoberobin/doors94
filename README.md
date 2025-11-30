@@ -12,7 +12,7 @@ doors94 is an educational playground disguised as a fake operating system. Learn
 
 - **Agent Creator**: Build custom AI agents with a step-by-step wizard
 - **Playground**: Compare agent responses side-by-side with raw GPT
-- **Control Panel**: Manage, edit, duplicate, and delete your agents
+- **Manage Agents**: Manage, edit, duplicate, and delete your agents
 - **Windows 95 UI**: Authentic retro interface with draggable windows, taskbar, and desktop icons
 - **Built-in Tutorial Agent**: Learn the system with an interactive guide
 - **Real-time Validation**: See validation errors as you build agents
@@ -82,7 +82,7 @@ npm start
 
 5. **Compare in Playground**: Open the **Playground** to compare your agent's responses with raw GPT side-by-side. (The built-in **Tutorial** helper agent is intentionally hidden from this dropdown so you can focus on benchmarking your own agents.)
 
-6. **Manage Agents**: Use the **Control Panel** to edit, duplicate, or delete your agents.
+6. **Manage Agents**: Use the **Manage Agents** window to edit, duplicate, or delete your agents.
 
 ### Creating Agents
 
@@ -140,7 +140,7 @@ doors94/
 │   ├── components/
 │   │   ├── AgentChatWindow.tsx       # Chat interface for agents
 │   │   ├── AgentCreatorWindow.tsx        # Agent creation wizard
-│   │   ├── ControlPanelWindow.tsx   # Agent management
+│   │   ├── ManageAgentsWindow.tsx   # Agent management
 │   │   ├── Desktop.tsx               # Desktop with icons
 │   │   ├── PlaygroundWindow.tsx      # Side-by-side comparison
 │   │   ├── ReadMeWindow.tsx          # Built-in help
