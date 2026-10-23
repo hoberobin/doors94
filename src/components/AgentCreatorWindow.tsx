@@ -14,6 +14,8 @@ interface AgentCreatorWindowProps {
   onClick: () => void
   onMove?: (x: number, y: number) => void
   onResize?: (width: number, height: number) => void
+  onMaximize?: () => void
+  isMaximized?: boolean
   style?: React.CSSProperties
   agentId?: string // If provided, edit mode
   onAgentCreated?: (agentId: string) => void // Callback when agent is saved
@@ -28,6 +30,8 @@ export default function AgentCreatorWindow({
   onClick,
   onMove,
   onResize,
+  onMaximize,
+  isMaximized,
   style,
   agentId,
   onAgentCreated,
@@ -557,6 +561,8 @@ export default function AgentCreatorWindow({
         onClick={onClick}
         onMove={onMove}
         onResize={onResize}
+        onMaximize={onMaximize}
+        isMaximized={isMaximized}
         style={style}
       >
         <div

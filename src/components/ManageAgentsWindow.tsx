@@ -14,6 +14,8 @@ interface ManageAgentsWindowProps {
   onClick: () => void
   onMove?: (x: number, y: number) => void
   onResize?: (width: number, height: number) => void
+  onMaximize?: () => void
+  isMaximized?: boolean
   style?: React.CSSProperties
   onAgentUpdated?: () => void // Callback when agent is saved (to refresh desktop)
 }
@@ -25,6 +27,8 @@ export default function ManageAgentsWindow({
   onClick,
   onMove,
   onResize,
+  onMaximize,
+  isMaximized,
   style,
   onAgentUpdated,
 }: ManageAgentsWindowProps) {
@@ -249,6 +253,8 @@ export default function ManageAgentsWindow({
         onClick={onClick}
         onMove={onMove}
         onResize={onResize}
+        onMaximize={onMaximize}
+        isMaximized={isMaximized}
         style={style}
       >
         <div

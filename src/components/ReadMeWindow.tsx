@@ -10,6 +10,8 @@ interface ReadMeWindowProps {
   onClick: () => void
   onMove?: (x: number, y: number) => void
   onResize?: (width: number, height: number) => void
+  onMaximize?: () => void
+  isMaximized?: boolean
   style?: React.CSSProperties
 }
 
@@ -20,6 +22,8 @@ export default function ReadMeWindow({
   onClick,
   onMove,
   onResize,
+  onMaximize,
+  isMaximized,
   style,
 }: ReadMeWindowProps) {
   return (
@@ -31,6 +35,8 @@ export default function ReadMeWindow({
       onClick={onClick}
       onMove={onMove}
       onResize={onResize}
+      onMaximize={onMaximize}
+      isMaximized={isMaximized}
       style={style}
     >
       <div

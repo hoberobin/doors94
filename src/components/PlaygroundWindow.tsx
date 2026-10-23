@@ -18,6 +18,8 @@ interface PlaygroundWindowProps {
   onClick: () => void
   onMove?: (x: number, y: number) => void
   onResize?: (width: number, height: number) => void
+  onMaximize?: () => void
+  isMaximized?: boolean
   style?: React.CSSProperties
 }
 
@@ -28,6 +30,8 @@ export default function PlaygroundWindow({
   onClick,
   onMove,
   onResize,
+  onMaximize,
+  isMaximized,
   style,
 }: PlaygroundWindowProps) {
   const { agents: allAgents } = useAgents()
@@ -160,6 +164,8 @@ export default function PlaygroundWindow({
       onClick={onClick}
       onMove={onMove}
       onResize={onResize}
+      onMaximize={onMaximize}
+      isMaximized={isMaximized}
       style={style}
     >
       <div
