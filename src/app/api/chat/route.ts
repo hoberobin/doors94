@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { AgentManifest, buildSystemPrompt, validateAgentManifest } from '@/lib/agentManifest';
 import { validateEnv } from '@/lib/env';
+import { CHAT_MODEL } from '@/lib/constants';
 
-// Validate environment on module load
+export const dynamic = 'force-dynamic';
+
 const envValidation = validateEnv();
 if (!envValidation.valid && typeof window === 'undefined') {
   console.error('Environment validation failed:', envValidation.error);
@@ -15,17 +17,21 @@ const openai = new OpenAI({
 
 const MAX_PROMPT_LENGTH = 4000; // Characters, roughly 1000 tokens
 
+/**
+ * Streams the assistant reply as plain text chunks. Validation problems and
+ * upstream errors are returned as JSON with a non-2xx status before any
+ * streaming starts, so clients check `response.ok` first.
+ */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     const { agentManifest, messages, mode } = body as {
       agentManifest?: AgentManifest;
       messages: { role: 'user' | 'assistant' | 'system'; content: string }[];
       mode?: 'raw' | 'agent';
     };
 
-    // Validate messages
     if (!Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json(
         { error: 'messages array is required and must not be empty' },
@@ -33,21 +39,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check for API key
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
-        { error: 'OPENAI_API_KEY is not configured' },
+        { error: 'OPENAI_API_KEY is not configured. Add it to .env.local and restart the dev server.' },
         { status: 500 }
       );
     }
 
     let systemPrompt: string | undefined = undefined;
 
-    // Handle raw mode (no system prompt)
-    if (mode === 'raw') {
-      systemPrompt = undefined;
-    } else {
-      // Agent mode - require manifest
+    if (mode !== 'raw') {
       if (!agentManifest) {
         return NextResponse.json(
           { error: 'agentManifest is required when mode is not "raw"' },
@@ -55,7 +56,6 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Validate manifest
       const validation = validateAgentManifest(agentManifest);
       if (!validation.valid) {
         return NextResponse.json(
@@ -64,32 +64,24 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Build system prompt from manifest
       systemPrompt = buildSystemPrompt(agentManifest);
 
-      // Check prompt length
       if (systemPrompt.length > MAX_PROMPT_LENGTH) {
         return NextResponse.json(
-          { 
-            error: `System prompt too long (${systemPrompt.length} chars, max ${MAX_PROMPT_LENGTH}). Please reduce agent manifest fields.` 
+          {
+            error: `System prompt too long (${systemPrompt.length} chars, max ${MAX_PROMPT_LENGTH}). Please reduce agent manifest fields.`
           },
           { status: 400 }
         );
       }
     }
 
-    // Build messages array for OpenAI
     const openaiMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
-    
-    // Add system message if present
+
     if (systemPrompt) {
-      openaiMessages.push({
-        role: 'system',
-        content: systemPrompt,
-      });
+      openaiMessages.push({ role: 'system', content: systemPrompt });
     }
-    
-    // Add user/assistant messages (filter out any system messages from client)
+
     openaiMessages.push(
       ...messages
         .filter((msg) => msg.role !== 'system')
@@ -98,24 +90,39 @@ export async function POST(request: NextRequest) {
           content: msg.content,
         }))
     );
-    
-    // Call OpenAI API
+
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: CHAT_MODEL,
       messages: openaiMessages,
       temperature: 0.7,
+      stream: true,
     });
 
-    const assistantMessage = completion.choices[0]?.message?.content;
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream<Uint8Array>({
+      async start(controller) {
+        try {
+          for await (const chunk of completion) {
+            const delta = chunk.choices[0]?.delta?.content;
+            if (delta) controller.enqueue(encoder.encode(delta));
+          }
+          controller.close();
+        } catch (error) {
+          controller.error(error);
+        }
+      },
+      cancel() {
+        completion.controller.abort();
+      },
+    });
 
-    if (!assistantMessage) {
-      return NextResponse.json(
-        { error: 'No response from OpenAI' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ content: assistantMessage });
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-cache',
+        'X-Content-Type-Options': 'nosniff',
+      },
+    });
   } catch (error) {
     if (error instanceof OpenAI.APIError) {
       return NextResponse.json(

@@ -1,28 +1,59 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import StartMenu, { StartMenuProps } from './StartMenu'
 
-interface Window {
+interface TaskbarWindow {
   id: string
   title: string
   appId: string
   minimized: boolean
 }
 
-interface TaskbarProps {
-  windows: Window[]
+interface TaskbarProps extends Omit<StartMenuProps, 'onClose'> {
+  windows: TaskbarWindow[]
   activeWindowId: string | null
   onSelectWindow: (windowId: string) => void
-  onStartClick: () => void
+}
+
+function formatClock(date: Date): string {
+  return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
 }
 
 export default function Taskbar({
   windows,
   activeWindowId,
   onSelectWindow,
-  onStartClick,
+  ...startMenuProps
 }: TaskbarProps) {
-  const visibleWindows = windows.filter((w) => !w.minimized)
+  const [startOpen, setStartOpen] = useState(false)
+  const [clock, setClock] = useState('')
+  const startRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const tick = () => setClock(formatClock(new Date()))
+    tick()
+    const id = window.setInterval(tick, 15000)
+    return () => window.clearInterval(id)
+  }, [])
+
+  useEffect(() => {
+    if (!startOpen) return
+    const onMouseDown = (e: MouseEvent) => {
+      if (startRef.current && !startRef.current.contains(e.target as Node)) {
+        setStartOpen(false)
+      }
+    }
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setStartOpen(false)
+    }
+    document.addEventListener('mousedown', onMouseDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', onMouseDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [startOpen])
 
   return (
     <div
@@ -35,52 +66,61 @@ export default function Taskbar({
         height: '32px',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
         zIndex: 10000,
       }}
     >
-      <button
-        className="win95-taskbar-start"
-        onClick={onStartClick}
-        aria-label="Open Tutorial"
-      >
-        Start
-      </button>
+      <div ref={startRef} style={{ position: 'relative' }}>
+        <button
+          className={`win95-taskbar-start${startOpen ? ' active' : ''}`}
+          onClick={() => setStartOpen((open) => !open)}
+          aria-haspopup="menu"
+          aria-expanded={startOpen}
+          aria-label="Start menu"
+        >
+          <span aria-hidden="true" style={{ marginRight: '4px' }}>🪟</span>Start
+        </button>
+        {startOpen && <StartMenu {...startMenuProps} onClose={() => setStartOpen(false)} />}
+      </div>
+
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           gap: '2px',
           flex: 1,
-          justifyContent: 'flex-end',
+          minWidth: 0,
+          paddingLeft: '6px',
           paddingRight: '4px',
+          overflow: 'hidden',
         }}
       >
-        {visibleWindows.map((window) => (
-          <div
-            key={window.id}
-            className={`win95-taskbar-item ${activeWindowId === window.id ? 'active' : ''}`}
-            onClick={() => onSelectWindow(window.id)}
-            style={{
-              backgroundColor:
-                activeWindowId === window.id
-                  ? 'var(--win95-window-bg)'
-                  : 'var(--win95-button-bg)',
-              borderColor:
-                activeWindowId === window.id
-                  ? 'var(--win95-border-darker) var(--win95-border-light) var(--win95-border-light) var(--win95-border-darker)'
-                  : 'var(--win95-border-light) var(--win95-border-darker) var(--win95-border-darker) var(--win95-border-light)',
-              boxShadow:
-                activeWindowId === window.id
-                  ? 'inset 1px 1px 0 0 var(--win95-shadow-dark), inset -1px -1px 0 0 var(--win95-shadow-light)'
-                  : '1px 1px 0 0 var(--win95-shadow-dark), -1px -1px 0 0 var(--win95-shadow-light), 1px 1px 0 1px var(--win95-shadow-darker), -1px -1px 0 1px var(--win95-shadow-light)',
-            }}
-          >
-            {window.title}
-          </div>
-        ))}
+        {windows.map((w) => {
+          const pressed = activeWindowId === w.id && !w.minimized
+          return (
+            <button
+              key={w.id}
+              className={`win95-taskbar-item${pressed ? ' active' : ''}`}
+              onClick={() => onSelectWindow(w.id)}
+              aria-pressed={pressed}
+              title={w.minimized ? `Restore ${w.title}` : w.title}
+              style={{
+                fontWeight: pressed ? 'bold' : 'normal',
+                fontStyle: w.minimized ? 'italic' : 'normal',
+                maxWidth: '160px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {w.title}
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="win95-taskbar-tray" aria-live="off" title={new Date().toDateString()}>
+        {clock}
       </div>
     </div>
   )
 }
-

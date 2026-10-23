@@ -11,7 +11,20 @@ interface Win95WindowProps {
   onClick: () => void
   onMove?: (x: number, y: number) => void
   onResize?: (width: number, height: number) => void
+  onMaximize?: () => void
+  isMaximized?: boolean
   style?: React.CSSProperties
+}
+
+const TITLE_BUTTON_STYLE: React.CSSProperties = {
+  padding: 0,
+  width: '18px',
+  minWidth: '18px',
+  height: '16px',
+  minHeight: '16px',
+  fontSize: '12px',
+  lineHeight: '1',
+  fontWeight: 'bold',
 }
 
 export default function Win95Window({
@@ -23,6 +36,8 @@ export default function Win95Window({
   onClick,
   onMove,
   onResize,
+  onMaximize,
+  isMaximized = false,
   style,
 }: Win95WindowProps) {
   const [isDragging, setIsDragging] = useState(false)
@@ -32,9 +47,10 @@ export default function Win95Window({
   const windowRef = useRef<HTMLDivElement>(null)
 
   const handleTitleBarMouseDown = (e: React.MouseEvent) => {
-    if (e.target instanceof HTMLButtonElement) return // Don't drag if clicking buttons
-    if (!onMove || !windowRef.current) return
-    
+    if (e.target instanceof HTMLButtonElement) return
+    onClick()
+    if (!onMove || !windowRef.current || isMaximized) return
+
     const rect = windowRef.current.getBoundingClientRect()
     setIsDragging(true)
     setDragStart({
@@ -43,13 +59,12 @@ export default function Win95Window({
       offsetX: e.clientX - rect.left,
       offsetY: e.clientY - rect.top,
     })
-    onClick() // Focus window
   }
 
   const handleResizeMouseDown = (e: React.MouseEvent) => {
     e.stopPropagation()
     if (!onResize || !windowRef.current) return
-    
+
     const rect = windowRef.current.getBoundingClientRect()
     setIsResizing(true)
     setResizeStart({
@@ -58,7 +73,7 @@ export default function Win95Window({
       width: rect.width,
       height: rect.height,
     })
-    onClick() // Focus window
+    onClick()
   }
 
   useEffect(() => {
@@ -68,7 +83,7 @@ export default function Win95Window({
         const newY = e.clientY - dragStart.offsetY
         onMove(Math.max(0, newX), Math.max(0, newY))
       }
-      
+
       if (isResizing && onResize) {
         const deltaX = e.clientX - resizeStart.x
         const deltaY = e.clientY - resizeStart.y
@@ -106,11 +121,15 @@ export default function Win95Window({
         ...style,
         cursor: isDragging ? 'move' : 'default',
       }}
-      onClick={onClick}
+      onMouseDown={onClick}
     >
       <div
-        className="win95-window-titlebar"
+        className={`win95-window-titlebar${isActive ? '' : ' inactive'}`}
         onMouseDown={handleTitleBarMouseDown}
+        onDoubleClick={(e) => {
+          if (e.target instanceof HTMLButtonElement) return
+          onMaximize?.()
+        }}
         role="button"
         aria-label={`Window title bar for ${title}`}
         tabIndex={0}
@@ -120,12 +139,12 @@ export default function Win95Window({
           }
         }}
         style={{
-          cursor: 'move',
+          cursor: isMaximized ? 'default' : 'move',
           userSelect: 'none',
         }}
       >
-        <span>{title}</span>
-        <div style={{ display: 'flex', gap: '2px' }}>
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</span>
+        <div style={{ display: 'flex', gap: '2px', flexShrink: 0 }}>
           <button
             className="win95-button"
             onClick={(e) => {
@@ -133,16 +152,25 @@ export default function Win95Window({
               onMinimize()
             }}
             aria-label={`Minimize ${title}`}
-            style={{
-              padding: '0 4px',
-              minWidth: '20px',
-              minHeight: '18px',
-              fontSize: '13px',
-            }}
+            style={TITLE_BUTTON_STYLE}
             title="Minimize"
           >
             _
           </button>
+          {onMaximize && (
+            <button
+              className="win95-button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onMaximize()
+              }}
+              aria-label={isMaximized ? `Restore ${title}` : `Maximize ${title}`}
+              style={TITLE_BUTTON_STYLE}
+              title={isMaximized ? 'Restore' : 'Maximize'}
+            >
+              {isMaximized ? '❐' : '□'}
+            </button>
+          )}
           <button
             className="win95-button"
             onClick={(e) => {
@@ -150,12 +178,7 @@ export default function Win95Window({
               onClose()
             }}
             aria-label={`Close ${title}`}
-            style={{
-              padding: '0 4px',
-              minWidth: '20px',
-              minHeight: '18px',
-              fontSize: '13px',
-            }}
+            style={{ ...TITLE_BUTTON_STYLE, marginLeft: '2px' }}
             title="Close"
           >
             ×
@@ -165,8 +188,7 @@ export default function Win95Window({
       <div className="win95-window-body" style={{ position: 'relative', height: 'calc(100% - 22px)', overflow: 'auto' }}>
         {children}
       </div>
-      {/* Resize handle */}
-      {onResize && (
+      {onResize && !isMaximized && (
         <div
           onMouseDown={handleResizeMouseDown}
           role="button"
@@ -188,4 +210,3 @@ export default function Win95Window({
     </div>
   )
 }
-

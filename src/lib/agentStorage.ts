@@ -166,30 +166,31 @@ export function getRemainingAgentSlots(): number {
 }
 
 /**
- * Duplicates a user agent by creating a copy with a new ID.
- * The new agent will have "_copy" appended to the name and ID.
+ * Duplicates any agent (built-in or user) into a new editable user agent.
+ * Built-in examples are read-only, so this is how users remix them.
  */
-export function duplicateUserAgent(agentId: string): AgentManifest {
-  const agent = getUserAgent(agentId);
+export function duplicateAgent(agentId: string): AgentManifest {
+  const agent = getAllAgents().find((a) => a.id === agentId);
   if (!agent) {
     throw new Error(`Agent with id "${agentId}" not found`);
   }
 
-  // Create a duplicate with modified name and ID
   const existingAgents = getAllAgents();
+  const baseName = agent.name.replace(/ \(Copy \d+\)$/, '');
+  const baseId = agent.id.replace(/_copy\d+$/, '');
   let copyNumber = 1;
-  let newId = `${agent.id}_copy${copyNumber}`;
-  let newName = `${agent.name} (Copy ${copyNumber})`;
+  let newId = `${baseId}_copy${copyNumber}`;
+  let newName = `${baseName} (Copy ${copyNumber})`;
 
-  // Find a unique ID and name
   while (existingAgents.some(a => a.id === newId)) {
     copyNumber++;
-    newId = `${agent.id}_copy${copyNumber}`;
-    newName = `${agent.name} (Copy ${copyNumber})`;
+    newId = `${baseId}_copy${copyNumber}`;
+    newName = `${baseName} (Copy ${copyNumber})`;
   }
 
+  const { source: _source, ...manifest } = agent;
   const duplicate: AgentManifest = {
-    ...agent,
+    ...manifest,
     id: newId,
     name: newName,
   };

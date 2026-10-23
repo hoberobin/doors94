@@ -10,6 +10,8 @@ interface ReadMeWindowProps {
   onClick: () => void
   onMove?: (x: number, y: number) => void
   onResize?: (width: number, height: number) => void
+  onMaximize?: () => void
+  isMaximized?: boolean
   style?: React.CSSProperties
 }
 
@@ -20,6 +22,8 @@ export default function ReadMeWindow({
   onClick,
   onMove,
   onResize,
+  onMaximize,
+  isMaximized,
   style,
 }: ReadMeWindowProps) {
   return (
@@ -31,6 +35,8 @@ export default function ReadMeWindow({
       onClick={onClick}
       onMove={onMove}
       onResize={onResize}
+      onMaximize={onMaximize}
+      isMaximized={isMaximized}
       style={style}
     >
       <div
@@ -68,13 +74,14 @@ export default function ReadMeWindow({
 
         <p style={{ marginBottom: '12px', color: '#000000' }}>
           Your desktop includes <strong>Tutorial</strong> — a built-in agent that teaches you how to use doors94.
-          You can open it by clicking the <strong>Start</strong> button on the taskbar or by double-clicking the
-          <strong>“Tutorial”</strong> icon on the desktop. Ask it questions about features, workflows, or how things
-          work; it’s your personal guide to the sandbox!
+          Double-click its icon or pick it from the <strong>Start</strong> menu. Ask it questions about features,
+          workflows, or how things work; it’s your personal guide to the sandbox!
         </p>
 
         <p style={{ marginBottom: '16px', color: '#000000' }}>
-          After exploring Tutorial, you'll be ready to create your own agents in Agent Creator.
+          Four example agents ship with doors94: <strong>PirateMatey.exe</strong>, <strong>Haiku.sys</strong>,
+          <strong> Reviewer.bat</strong>, and <strong>ELI5.dll</strong>. Chat with them, compare them in the Playground,
+          and use <strong>Remix</strong> in Manage Agents to get an editable copy of any of them.
         </p>
 
         <h2 style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '20px', marginBottom: '8px', color: '#000000' }}>
@@ -93,7 +100,9 @@ export default function ReadMeWindow({
         </ol>
 
         <p style={{ marginBottom: '16px', color: '#000000' }}>
-          After saving, your agent appears as an icon on the desktop. Double-click it to start chatting!
+          After saving, a chat window opens and your agent appears as an icon on the desktop. Replies stream in;
+          press <strong>Stop</strong> to cut one short, or <strong>New chat</strong> to start over. Each agent remembers
+          its last conversation when you reopen it.
         </p>
 
         <h2 style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '20px', marginBottom: '8px', color: '#000000' }}>
@@ -129,8 +138,9 @@ export default function ReadMeWindow({
         </ul>
 
         <p style={{ marginBottom: '16px', color: '#000000' }}>
-          Enter the same message and compare outputs to see how prompts shape behavior. This is the core
-          learning mechanism of doors94!
+          Enter the same message (or click a <strong>Try:</strong> sample) and compare outputs to see how prompts
+          shape behavior. <strong>Show prompt</strong> reveals the exact system prompt behind the right pane.
+          This is the core learning mechanism of doors94!
         </p>
 
         <h2 style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '20px', marginBottom: '8px', color: '#000000' }}>
@@ -167,9 +177,13 @@ export default function ReadMeWindow({
         <ul style={{ marginLeft: '20px', marginBottom: '16px', color: '#000000' }}>
           <li><strong>Moving:</strong> Click and drag the title bar</li>
           <li><strong>Resizing:</strong> Drag the bottom-right corner</li>
-          <li><strong>Minimizing:</strong> Click the "_" button</li>
+          <li><strong>Maximizing:</strong> Click the "□" button or double-click the title bar</li>
+          <li><strong>Minimizing:</strong> Click the "_" button, then click its taskbar button to bring it back</li>
           <li><strong>Closing:</strong> Click the "×" button</li>
         </ul>
+        <p style={{ marginBottom: '16px', color: '#000000' }}>
+          Window positions are remembered. <strong>Start → Reset window layout</strong> clears them.
+        </p>
 
         <h2 style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '20px', marginBottom: '8px', color: '#000000' }}>
           What You'll Learn

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Win95Window from './Win95Window'
 import { AgentManifestWithSource, AgentManifest, buildSystemPrompt, validateAgentManifest, generateAgentId } from '@/lib/agentManifest'
-import { deleteUserAgent, duplicateUserAgent, saveUserAgent, getUserAgent } from '@/lib/agentStorage'
+import { deleteUserAgent, duplicateAgent, saveUserAgent, getUserAgent } from '@/lib/agentStorage'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useAgents } from '@/contexts/AgentContext'
 
@@ -14,6 +14,8 @@ interface ManageAgentsWindowProps {
   onClick: () => void
   onMove?: (x: number, y: number) => void
   onResize?: (width: number, height: number) => void
+  onMaximize?: () => void
+  isMaximized?: boolean
   style?: React.CSSProperties
   onAgentUpdated?: () => void // Callback when agent is saved (to refresh desktop)
 }
@@ -25,6 +27,8 @@ export default function ManageAgentsWindow({
   onClick,
   onMove,
   onResize,
+  onMaximize,
+  isMaximized,
   style,
   onAgentUpdated,
 }: ManageAgentsWindowProps) {
@@ -169,13 +173,10 @@ export default function ManageAgentsWindow({
 
   const handleDuplicateAgent = (agentId: string) => {
     try {
-      const duplicated = duplicateUserAgent(agentId)
+      const duplicated = duplicateAgent(agentId)
       refreshAgents()
-      // Select the newly duplicated agent
-      const newAgent = agents.find(a => a.id === duplicated.id)
-      if (newAgent) {
-        setSelectedAgent(newAgent)
-      }
+      setSelectedAgent({ ...duplicated, source: 'user' })
+      setIsEditMode(false)
       if (onAgentUpdated) {
         onAgentUpdated()
       }
@@ -252,6 +253,8 @@ export default function ManageAgentsWindow({
         onClick={onClick}
         onMove={onMove}
         onResize={onResize}
+        onMaximize={onMaximize}
+        isMaximized={isMaximized}
         style={style}
       >
         <div
@@ -630,14 +633,14 @@ export default function ManageAgentsWindow({
                           {selectedAgent.name}
                         </h2>
                         <div style={{ fontSize: '10px', color: '#808080' }}>
-                          {selectedAgent.source === 'builtin' 
-                            ? 'Built-in example (read-only)' 
+                          {selectedAgent.source === 'builtin'
+                            ? 'Built-in example (read-only). Remix it to get an editable copy.'
                             : 'Your custom agent'}
                         </div>
                       </div>
                     </div>
-                    {selectedAgent.source === 'user' && (
-                      <div style={{ display: 'flex', gap: '4px' }}>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      {selectedAgent.source === 'user' && (
                         <button
                           className="win95-button"
                           onClick={handleStartEdit}
@@ -645,13 +648,16 @@ export default function ManageAgentsWindow({
                         >
                           Edit
                         </button>
-                        <button
-                          className="win95-button"
-                          onClick={() => handleDuplicateAgent(selectedAgent.id)}
-                          style={{ minWidth: '60px', fontSize: '11px' }}
-                        >
-                          Duplicate
-                        </button>
+                      )}
+                      <button
+                        className="win95-button"
+                        onClick={() => handleDuplicateAgent(selectedAgent.id)}
+                        style={{ minWidth: '60px', fontSize: '11px' }}
+                        title={selectedAgent.source === 'builtin' ? 'Make an editable copy of this example' : 'Make a copy'}
+                      >
+                        {selectedAgent.source === 'builtin' ? 'Remix' : 'Duplicate'}
+                      </button>
+                      {selectedAgent.source === 'user' && (
                         <button
                           className="win95-button"
                           onClick={() => setShowDeleteConfirm(selectedAgent.id)}
@@ -659,8 +665,8 @@ export default function ManageAgentsWindow({
                         >
                           Delete
                         </button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
 
                   <div style={{ marginBottom: '12px', padding: '8px', border: '1px solid var(--win95-border-dark)', backgroundColor: '#ffffff' }}>

@@ -4,6 +4,7 @@ export interface WindowState {
   appId: string
   agentId?: string
   minimized: boolean
+  maximized?: boolean
   x: number
   y: number
   width: number
@@ -11,10 +12,9 @@ export interface WindowState {
 }
 
 const STORAGE_KEY = 'DOORS94_WINDOWS'
+const WELCOMED_KEY = 'DOORS94_WELCOMED'
+const BOOTED_KEY = 'DOORS94_BOOTED'
 
-/**
- * Saves window states to localStorage
- */
 export function saveWindowStates(windows: WindowState[]): void {
   if (typeof window === 'undefined') {
     return
@@ -29,9 +29,6 @@ export function saveWindowStates(windows: WindowState[]): void {
   }
 }
 
-/**
- * Loads window states from localStorage
- */
 export function loadWindowStates(): WindowState[] {
   if (typeof window === 'undefined') {
     return []
@@ -53,9 +50,6 @@ export function loadWindowStates(): WindowState[] {
   }
 }
 
-/**
- * Clears saved window states
- */
 export function clearWindowStates(): void {
   if (typeof window === 'undefined') {
     return
@@ -68,5 +62,26 @@ export function clearWindowStates(): void {
   }
 }
 
+/** True the first time this browser opens the desktop; sticky afterwards. */
+export function consumeFirstRun(): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    if (localStorage.getItem(WELCOMED_KEY)) return false
+    localStorage.setItem(WELCOMED_KEY, '1')
+    return true
+  } catch {
+    return false
+  }
+}
 
-
+/** True once per browser tab session, so the boot screen plays on arrival but not on every reload. */
+export function consumeBootScreen(): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    if (sessionStorage.getItem(BOOTED_KEY)) return false
+    sessionStorage.setItem(BOOTED_KEY, '1')
+    return true
+  } catch {
+    return false
+  }
+}
