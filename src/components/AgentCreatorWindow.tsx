@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Win95Window from './Win95Window'
 import { AgentManifest, buildSystemPrompt, validateAgentManifest, generateAgentId } from '@/lib/agentManifest'
 import { saveUserAgent, getUserAgent } from '@/lib/agentStorage'
+import { EXAMPLE_AGENTS } from '@/lib/builtinAgents'
 import { useDebounce } from '@/hooks/useDebounce'
 
 interface AgentCreatorWindowProps {
@@ -145,26 +146,14 @@ export default function AgentCreatorWindow({
     setShowExampleConfirm(true)
   }
 
-  const applyExampleTemplate = () => {
-    setName('PirateMatey.exe')
-    setDescription('A boisterous pirate who answers questions in full pirate speak while still being helpful.')
-    setIcon('🏴‍☠️')
-    setPurpose(
-      'Help users with their questions while always speaking and acting like a classic pirate. ' +
-        'Use nautical metaphors, pirate slang, and playful bravado while still giving accurate, useful answers.'
-    )
-    setRules([
-      "Always speak in a pirate's voice using words like \"arrr\", \"matey\", \"captain\", and \"ship\".",
-      'Always sprinkle in nautical metaphors when explaining concepts.',
-      'Never drop the pirate persona, even for technical topics.',
-      'Never use modern internet slang or emojis.',
-      'Always stay friendly, light-hearted, and a bit dramatic.',
-    ])
-    setTone('playful')
-    setOutputStyle(
-      'Use short paragraphs and colorful pirate expressions. ' +
-        'Start most replies with a pirate-flavored greeting (like \"Ahoy matey\"), and end with a playful pirate sign-off.'
-    )
+  const applyExampleTemplate = (example: AgentManifest) => {
+    setName(`My ${example.name}`)
+    setDescription(example.description)
+    setIcon(example.icon)
+    setPurpose(example.purpose)
+    setRules(example.rules.length > 0 ? [...example.rules] : [''])
+    setTone(example.tone)
+    setOutputStyle(example.outputStyle)
     setShowExampleConfirm(false)
   }
 
@@ -656,8 +645,8 @@ export default function AgentCreatorWindow({
             boxShadow:
               '2px 2px 0 0 var(--win95-shadow-dark), -2px -2px 0 0 var(--win95-shadow-light)',
             padding: '16px',
-            minWidth: '280px',
-            maxWidth: '420px',
+            minWidth: '320px',
+            maxWidth: '460px',
           }}
         >
           <div
@@ -668,33 +657,42 @@ export default function AgentCreatorWindow({
               color: '#000000',
             }}
           >
-            Load example agent?
+            Start from an example
           </div>
           <div
             style={{
               fontSize: '11px',
-              marginBottom: '16px',
+              marginBottom: '12px',
               color: '#000000',
               lineHeight: '1.4',
             }}
           >
-            This will replace your current fields with a pre-filled pirate themed example. You can
-            always tweak it afterwards, but any unsaved text here will be lost.
+            Pick one to fill in every step. Unsaved text in this wizard will be replaced, and you
+            can tweak anything afterwards.
           </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '12px' }}>
+            {EXAMPLE_AGENTS.map((example) => (
+              <button
+                key={example.id}
+                className="win95-button"
+                onClick={() => applyExampleTemplate(example)}
+                style={{ justifyContent: 'flex-start', gap: '8px', textAlign: 'left', padding: '6px 10px' }}
+              >
+                <span style={{ fontSize: '16px' }}>{example.icon}</span>
+                <span>
+                  <strong>{example.name}</strong>
+                  <span style={{ display: 'block', fontSize: '10px', color: '#404040' }}>{example.description}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button
               className="win95-button"
               onClick={() => setShowExampleConfirm(false)}
               style={{ minWidth: '80px' }}
             >
-              Keep my changes
-            </button>
-            <button
-              className="win95-button"
-              onClick={applyExampleTemplate}
-              style={{ minWidth: '110px' }}
-            >
-              Load example
+              Cancel
             </button>
           </div>
         </div>
