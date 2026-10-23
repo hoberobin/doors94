@@ -1,5 +1,3 @@
-import { AgentManifest } from './agentManifest'
-
 export interface Message {
   role: 'user' | 'assistant' | 'system'
   content: string
@@ -14,53 +12,63 @@ export interface Conversation {
 }
 
 const STORAGE_KEY_PREFIX = 'DOORS94_CONVERSATION_'
-const MAX_CONVERSATIONS_PER_AGENT = 50
+const MAX_CONVERSATIONS_PER_AGENT = 20
 
-/**
- * Saves a conversation for an agent
- */
-export function saveConversation(agentId: string, messages: Message[]): void {
-  if (typeof window === 'undefined') {
-    return
-  }
+function storageKey(agentId: string): string {
+  return `${STORAGE_KEY_PREFIX}${agentId}`
+}
 
-  const conversation: Conversation = {
-    id: `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    agentId,
-    messages,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  }
-
-  const conversations = loadConversations(agentId)
-  conversations.push(conversation)
-
-  // Keep only the most recent conversations
-  const sorted = conversations.sort((a, b) => b.updatedAt - a.updatedAt)
-  const trimmed = sorted.slice(0, MAX_CONVERSATIONS_PER_AGENT)
-
+function write(agentId: string, conversations: Conversation[]): void {
   try {
-    localStorage.setItem(`${STORAGE_KEY_PREFIX}${agentId}`, JSON.stringify(trimmed))
+    localStorage.setItem(storageKey(agentId), JSON.stringify(conversations))
   } catch (error) {
     if (error instanceof Error && error.name === 'QuotaExceededError') {
       console.warn('Storage quota exceeded. Clearing old conversations.')
-      // Clear oldest conversations
-      const reduced = trimmed.slice(0, Math.floor(MAX_CONVERSATIONS_PER_AGENT / 2))
-      localStorage.setItem(`${STORAGE_KEY_PREFIX}${agentId}`, JSON.stringify(reduced))
+      const reduced = conversations.slice(0, Math.floor(MAX_CONVERSATIONS_PER_AGENT / 2))
+      localStorage.setItem(storageKey(agentId), JSON.stringify(reduced))
     }
   }
 }
 
 /**
- * Loads all conversations for an agent
+ * Saves a conversation. Pass the id returned by an earlier call to update
+ * that conversation in place; omit it to start a new one. Returns the id.
  */
+export function saveConversation(agentId: string, messages: Message[], conversationId?: string): string {
+  if (typeof window === 'undefined') {
+    return conversationId ?? ''
+  }
+
+  const now = Date.now()
+  const conversations = loadConversations(agentId)
+  const existing = conversationId ? conversations.find((c) => c.id === conversationId) : undefined
+
+  if (existing) {
+    existing.messages = messages
+    existing.updatedAt = now
+  } else {
+    conversations.push({
+      id: conversationId ?? `conv_${now}_${Math.random().toString(36).slice(2, 11)}`,
+      agentId,
+      messages,
+      createdAt: now,
+      updatedAt: now,
+    })
+  }
+
+  const trimmed = conversations.sort((a, b) => b.updatedAt - a.updatedAt).slice(0, MAX_CONVERSATIONS_PER_AGENT)
+  write(agentId, trimmed)
+  return existing ? existing.id : trimmed[0].id
+}
+
+/** All conversations for an agent, newest first. */
 export function loadConversations(agentId: string): Conversation[] {
   if (typeof window === 'undefined') {
     return []
   }
 
   try {
-    const stored = localStorage.getItem(`${STORAGE_KEY_PREFIX}${agentId}`)
+    const stored = localStorage.getItem(storageKey(agentId))
     if (!stored) {
       return []
     }
@@ -75,38 +83,26 @@ export function loadConversations(agentId: string): Conversation[] {
   }
 }
 
-/**
- * Deletes a conversation
- */
+export function loadLatestConversation(agentId: string): Conversation | undefined {
+  return loadConversations(agentId)[0]
+}
+
 export function deleteConversation(agentId: string, conversationId: string): void {
   if (typeof window === 'undefined') {
     return
   }
 
-  const conversations = loadConversations(agentId)
-  const filtered = conversations.filter((c) => c.id !== conversationId)
-
-  try {
-    localStorage.setItem(`${STORAGE_KEY_PREFIX}${agentId}`, JSON.stringify(filtered))
-  } catch (error) {
-    console.error('Error deleting conversation:', error)
-  }
+  write(agentId, loadConversations(agentId).filter((c) => c.id !== conversationId))
 }
 
-/**
- * Clears all conversations for an agent
- */
 export function clearConversations(agentId: string): void {
   if (typeof window === 'undefined') {
     return
   }
 
   try {
-    localStorage.removeItem(`${STORAGE_KEY_PREFIX}${agentId}`)
+    localStorage.removeItem(storageKey(agentId))
   } catch (error) {
     console.error('Error clearing conversations:', error)
   }
 }
-
-
-

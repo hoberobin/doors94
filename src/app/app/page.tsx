@@ -32,13 +32,14 @@ export default function AppDesktop() {
   const { agents, refreshAgents } = useAgents()
   const [windows, setWindows] = useState<WindowState[]>([])
   const [zOrder, setZOrder] = useState<string[]>([])
-  const [activeWindowId, setActiveWindowId] = useState<string | null>(null)
   const [booting, setBooting] = useState(false)
   const loaded = useRef(false)
   const openCount = useRef(0)
 
+  const activeWindowId =
+    [...zOrder].reverse().find((id) => windows.some((w) => w.id === id && !w.minimized)) ?? null
+
   const focusWindow = useCallback((windowId: string) => {
-    setActiveWindowId(windowId)
     setZOrder((prev) => [...prev.filter((id) => id !== windowId), windowId])
   }, [])
 
@@ -93,8 +94,6 @@ export default function AppDesktop() {
     if (saved.length > 0) {
       setWindows(saved)
       setZOrder(saved.map((w) => w.id))
-      const top = [...saved].reverse().find((w) => !w.minimized)
-      if (top) setActiveWindowId(top.id)
     } else if (consumeFirstRun()) {
       openApp('welcome')
     }
@@ -107,24 +106,11 @@ export default function AppDesktop() {
 
   const closeWindow = (windowId: string) => {
     setWindows((prev) => prev.filter((w) => w.id !== windowId))
-    setZOrder((prev) => {
-      const remaining = prev.filter((id) => id !== windowId)
-      if (activeWindowId === windowId) {
-        const visible = windows.filter((w) => w.id !== windowId && !w.minimized).map((w) => w.id)
-        const nextActive = [...remaining].reverse().find((id) => visible.includes(id)) ?? null
-        setActiveWindowId(nextActive)
-      }
-      return remaining
-    })
+    setZOrder((prev) => prev.filter((id) => id !== windowId))
   }
 
   const minimizeWindow = (windowId: string) => {
     setWindows((prev) => prev.map((w) => (w.id === windowId ? { ...w, minimized: true } : w)))
-    if (activeWindowId === windowId) {
-      const visible = windows.filter((w) => w.id !== windowId && !w.minimized).map((w) => w.id)
-      const nextActive = [...zOrder].reverse().find((id) => visible.includes(id)) ?? null
-      setActiveWindowId(nextActive)
-    }
   }
 
   const toggleMaximize = (windowId: string) => {
@@ -169,12 +155,10 @@ export default function AppDesktop() {
     clearWindowStates()
     setWindows([])
     setZOrder([])
-    setActiveWindowId(null)
   }
 
-  const handleAgentCreated = (creatorWindowId: string, agentId: string) => {
+  const handleAgentCreated = (agentId: string) => {
     refreshAgents()
-    closeWindow(creatorWindowId)
     const created = getUserAgent(agentId)
     if (created) openAgent(created)
   }
@@ -215,7 +199,7 @@ export default function AppDesktop() {
                 key={w.id}
                 {...frameProps(w)}
                 agentId={w.agentId}
-                onAgentCreated={(agentId) => handleAgentCreated(w.id, agentId)}
+                onAgentCreated={handleAgentCreated}
               />
             )
           case 'playground':

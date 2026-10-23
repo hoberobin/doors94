@@ -264,7 +264,7 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  width: 92px;
+  width: 104px;
   padding: 4px 2px;
   background: none;
   border: 1px solid transparent;
@@ -296,7 +296,7 @@ body {
   color: #ffffff;
   text-align: center;
   padding: 1px 3px;
-  max-width: 92px;
+  max-width: 104px;
   overflow-wrap: break-word;
 }
 
@@ -498,4 +498,63 @@ body {
     animation-duration: 0.01s;
     width: 100%;
   }
+}
+
+/* Chat markdown */
+.md p,
+.md ul,
+.md ol,
+.md pre,
+.md h3,
+.md h4,
+.md h5 {
+  margin: 0 0 8px;
+}
+
+.md > :last-child {
+  margin-bottom: 0;
+}
+
+.md ul,
+.md ol {
+  padding-left: 20px;
+}
+
+.md h3 {
+  font-size: 15px;
+}
+
+.md h4,
+.md h5 {
+  font-size: 13px;
+}
+
+.md-code,
+.md-pre {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  background-color: #f4f4f4;
+  border: 1px solid var(--win95-border-dark);
+}
+
+.md-code {
+  padding: 0 3px;
+}
+
+.md-pre {
+  padding: 6px 8px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.win95-cursor::after {
+  content: '▌';
+  animation: win95-loading 0.8s steps(2, end) infinite;
+}
+
+.win95-chip {
+  font-size: 12px;
+  padding: 1px 8px;
+  min-height: 20px;
 }
